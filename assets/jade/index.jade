@@ -7,11 +7,18 @@ html
     link(rel="stylesheet",href="build/base.css")
 
     script(src="build/vendor.js")
-    script(src="build/main.js")
+    script(type="text/paperscript",src="build/main.js",canvas="mainCanvas")
+
 
     title Silent Forest
 
   body
-      h1 Test
+        h1 Silent Forest
+        canvas(id="mainCanvas",resize="true",keepalive="true")
+
+        script(type='text/javascript').
+            var ctx = document.getElementById("mainCanvas");
+            ctx.width  = window.innerWidth;
+            ctx.height = window.innerHeight;
 
 
