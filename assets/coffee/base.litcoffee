@@ -68,9 +68,13 @@
             @item2.fillColor = "grey"
             @item2.opacity = 0.5
 
-            @item = new Path.Circle(startPosition, 10)
+            @item = new Path.Circle(startPosition, 20)
             @item.fillColor = "black"
             @status = "grey"
+
+            @conquerStatus = new Path.Circle(startPosition, 25)
+            @conquerStatus.strokeColor = "black"
+            @conquerStatus.strokeWidth = 5
 
             @conquerTime = 0.0
             @timeToConquer = 3
@@ -89,20 +93,39 @@
 
             if blue > red
                 @conquerTime -= event.delta
+                if Math.abs(@conquerTime) > @timeToConquer
+                    @conquerTime = -1 * @timeToConquer
             else if red > blue
                 @conquerTime += event.delta
+                if Math.abs(@conquerTime) > @timeToConquer
+                    @conquerTime = @timeToConquer
+
+            if @conquerStatus?
+                @conquerStatus.remove()
+
+
+            if Math.abs(@conquerTime) != @timeToConquer
+                @conquerStatus = new Path.Arc(getArcCirclePos(@item.position, 25, @conquerTime/@timeToConquer))
+            else
+                @conquerStatus = new Path.Circle(@item.position, 25)
+            @conquerStatus.strokeWidth = 5
+            @conquerStatus.strokeColor = "black"
 
             if @conquerTime <= (-1 * @timeToConquer)
                 @conquerTime = (-1 * @timeToConquer)
                 @item2.fillColor = "blue"
+                @conquerStatus.strokeColor = "blue"
                 @status = "blue"
             else if @conquerTime >= @timeToConquer
                 @conquerTime = @timeToConquer
                 @item2.fillColor = "red"
+                @conquerStatus.strokeColor = "red"
                 @status = "red"
             else if @conquerTime < 0 and @status == "red" or @conquerTime > 0 and @status == "blue"
                 @item2.fillColor = "grey"
+                @conquerStatus.strokeColor = "grey"
                 @status = "grey"
+            
 
     class Referee
 
@@ -160,6 +183,21 @@
         players.push(new Player(new Point(playerRedX, playerY), "red"))
         players.push(new Player(new Point(playerBlueX, playerY), "blue"))
 
+    getArcCirclePos = (point, radius, percent) ->
+        from = new Point()
+        through = new Point()
+        to = new Point()
+        
+        from.x = point.x
+        from.y = point.y - radius
+        
+        through.x = point.x + radius * Math.cos(2 * Math.PI * percent/2 - Math.PI/2)
+        through.y = point.y + radius * Math.sin(2 * Math.PI * percent/2 - Math.PI/2)
+        
+        to.x = point.x + radius * Math.cos(2 * Math.PI * percent - Math.PI/2)
+        to.y = point.y + radius * Math.sin(2 * Math.PI * percent - Math.PI/2)
+
+        return {from, through, to}
 
 
     ref = new Referee()
