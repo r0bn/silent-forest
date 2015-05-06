@@ -66,10 +66,10 @@
 
             @item2 = new Path.Circle(startPosition, 150)
             @item2.fillColor = "grey"
-            @item2.opacity = 0.5
+            @item2.opacity = 0.4
 
             @item = new Path.Circle(startPosition, 10)
-            @item.fillColor = "grey"
+            @item.fillColor = "black"
             @status = "grey"
 
 
@@ -85,13 +85,16 @@
 
 
             if blue > red
-                @item.fillColor = "blue"
+                #@item.fillColor = "blue"
+                @item2.fillColor = "blue"
                 @status = "blue"
             else if red > blue
-                @item.fillColor = "red"
+                #@item.fillColor = "red"
+                @item2.fillColor = "red"
                 @status = "red"
             else
-                @item.fillColor = "grey"
+                @item.fillColor = "black"
+                @item2.fillColor = "grey"
                 @status = "grey"
 
     class Referee
