@@ -15,22 +15,29 @@
             @item = new Path.Circle(startPosition, 20)
             @item.fillColor = @team
 
+            @selector = new Path.Circle(startPosition, 22)
+            @selector.strokeColor = @team
+            @selector.opacity = 0
+
 
             @item.onMouseDown = (event) =>
                 if !@selected
                     for p in Player.players
                         p.selected = false
+                        p.selector.opacity = 0
                         p.item.fillColor = p.team
                 @selected = !@selected
                 if @selected
-                    @item.fillColor = "green"
+                    @selector.opacity = 0.8
                 else
-                    @item.fillColor = @team
+                    @selector.opacity = 0
         
         draw : (event) =>
             vector = @moveVector - @item.position
             if vector.length > 3
                 @item.position += vector.normalize() * @moveSpeed * (event.delta / 0.0166)
+
+            @selector.position = @item.position
 
             if (event.time - @pulseLast) > @pulseFrequency
                 if @pulse?
