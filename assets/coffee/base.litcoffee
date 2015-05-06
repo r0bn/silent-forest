@@ -9,7 +9,7 @@
             @moveSpeed = 4
             @selected = false
 
-            @pulseFrequency = 10
+            @pulseFrequency = 2
             @pulseLast = 0
 
             @item = new Path.Circle(startPosition, 20)
@@ -74,7 +74,8 @@
             @conquerStatus.strokeWidth = 5
 
             @conquerTime = 0.0
-            @timeToConquer = 3
+            #min @timetoConquer = 0.1
+            @timeToConquer = 0.1
 
 
         draw : (event) ->
@@ -184,9 +185,9 @@
                 p.moveVector = new Point(msg.targetPoint[1], msg.targetPoint[2])
 
 
-    playerPTeam = 3
-    totalHills = 3
-    areaRadius = 400
+    playerPTeam = 5
+    totalHills = 4
+    areaRadius = 250
 
     areaCenterX = 50 + 20 + Player.radioWidth + areaRadius
     areaCenterY = 50 + 20 + Player.radioWidth + areaRadius
@@ -213,6 +214,7 @@
         players.push(new Player(new Point(playerBlueX, playerY), "blue", num + 100))
 
     getArcCirclePos = (point, radius, percent) ->
+        percent = 0.001 if percent < 0.001
         from = new Point()
         through = new Point()
         to = new Point()
