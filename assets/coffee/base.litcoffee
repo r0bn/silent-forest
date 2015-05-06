@@ -72,6 +72,9 @@
             @item.fillColor = "black"
             @status = "grey"
 
+            @conquerTime = 0.0
+            @timeToConquer = 3
+
 
         draw : (event) ->
             blue = 0
@@ -85,15 +88,19 @@
 
 
             if blue > red
-                #@item.fillColor = "blue"
+                @conquerTime -= event.delta
+            else if red > blue
+                @conquerTime += event.delta
+
+            if @conquerTime <= (-1 * @timeToConquer)
+                @conquerTime = (-1 * @timeToConquer)
                 @item2.fillColor = "blue"
                 @status = "blue"
-            else if red > blue
-                #@item.fillColor = "red"
+            else if @conquerTime >= @timeToConquer
+                @conquerTime = @timeToConquer
                 @item2.fillColor = "red"
                 @status = "red"
-            else
-                @item.fillColor = "black"
+            else if @conquerTime < 0 and @status == "red" or @conquerTime > 0 and @status == "blue"
                 @item2.fillColor = "grey"
                 @status = "grey"
 
