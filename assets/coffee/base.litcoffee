@@ -2,14 +2,14 @@
     class Player
 
         @players = []
+        @radioWidth = 150
 
         constructor : (startPosition, @team) ->
             @moveVector = startPosition
             @moveSpeed = 4
             @selected = false
-            @radioWidth = 150
 
-            @pulseFrequency = 2
+            @pulseFrequency = 10
             @pulseLast = 0
 
             @item = new Path.Circle(startPosition, 20)
@@ -66,7 +66,7 @@
 
             @item2 = new Path.Circle(startPosition, 150)
             @item2.fillColor = "grey"
-            @item2.opacity = 0.4
+            @item2.opacity = 0.5
 
             @item = new Path.Circle(startPosition, 10)
             @item.fillColor = "black"
@@ -77,7 +77,7 @@
             blue = 0
             red = 0
             for p in Player.players
-                if (p.item.position - @item.position).length < p.radioWidth
+                if (p.item.position - @item.position).length < Player.radioWidth
                     if p.team is "blue"
                         blue++
                     if p.team is "red"
@@ -125,19 +125,34 @@
                 @redCounter++
                 @itemRed.scale(1.01, 1, new Point(50,10))
 
+    playerPTeam = 3
+    totalHills = 3
+    areaRadius = 300
 
+    areaCenterX = 50 + 20 + Player.radioWidth + areaRadius
+    areaCenterY = 50 + 20 + Player.radioWidth + areaRadius
+    areaCenter = new Point(areaCenterX,areaCenterY)
+
+    getHillPos = (pos) ->
+        posDelta = 2 * Math.PI / totalHills
+        hillX = areaCenter.x + areaRadius * Math.cos((pos - 1) * posDelta - Math.PI/2)
+        hillY = areaCenter.y + areaRadius * Math.sin((pos - 1) * posDelta - Math.PI/2)
+        new Point(hillX, hillY)
 
 
     hills = Hill.hills
-    hills.push(new Hill(new Point(500,500)))
-    hills.push(new Hill(new Point(300,800)))
+    for pos in [1..totalHills]
+        hills.push(new Hill(getHillPos(pos)))
 
 
     players = Player.players
-    players.push(new Player(new Point(100,100),"red"))
-    players.push(new Player(new Point(150,150), "red"))
-    players.push(new Player(new Point(200,200), "blue"))
-    players.push(new Player(new Point(250,250), "blue"))
+    for num in [1..playerPTeam]
+        playerY = areaCenter.y - (playerPTeam - 1)*50/2 + (num - 1) * 50
+        playerRedX = 50
+        playerBlueX = areaCenter.x + (areaCenter.x - 50)
+        players.push(new Player(new Point(playerRedX, playerY), "red"))
+        players.push(new Player(new Point(playerBlueX, playerY), "blue"))
+
 
 
     ref = new Referee()
