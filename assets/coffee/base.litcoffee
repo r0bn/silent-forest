@@ -134,30 +134,56 @@
             @blueCounter = 1
             @redCounter = 1
 
-            @itemRed = new Path.Rectangle(new Point(50,10), new Size(5,20))
-            @itemRed.fillColor = "red"
-            @itemBlue = new Path.Rectangle(new Point(50,30), new Size(5,20))
-            @itemBlue.fillColor = "blue"
+            @itemsRed = []
+            @itemsBlue = []
 
-        draw : () ->
-            blue = 0
-            red = 0
-            for h in Hill.hills
-                if h.status is "blue"
-                    blue++
-                if h.status is "red"
-                    red++
+            @lastCount = 0
+            @countFrequency = 3
 
-            if blue > red
-                @blueCounter++
-                @itemBlue.scale(1.01, 1, new Point(50,10))
-            else if red > blue
-                @redCounter++
-                @itemRed.scale(1.01, 1, new Point(50,10))
+
+            blueOrder = new Path.Rectangle(new Point(0,25), new Size(602,14))
+            blueOrder.strokeColor = "blue"
+
+            redOrder = new Path.Rectangle(new Point(0,8), new Size(602,14))
+            redOrder.strokeColor = "red"
+
+        draw : (event) ->
+
+            if @blueCounter >= 51 or @redCounter >= 51
+                return
+
+            if (event.time - @lastCount) > @countFrequency
+                blue = 0
+                red = 0
+                for h in Hill.hills
+                    if h.status is "blue"
+                        blue++
+                    if h.status is "red"
+                        red++
+
+                if blue > red
+                    for i in [1..(blue - red)]
+                        if @blueCounter >= 51
+                            break
+                        itemBlue = new Path.Rectangle(new Point(2+(@itemsBlue.length * 12),27), new Size(10,10))
+                        itemBlue.fillColor = "blue"
+                        @itemsBlue.push itemBlue
+                        @blueCounter++
+                else if red > blue
+                    for i in [1..(red - blue)]
+                        if @redCounter >= 51
+                            break
+                        itemRed = new Path.Rectangle(new Point(2+(@itemsRed.length * 12),10), new Size(10,10))
+                        itemRed.fillColor = "red"
+                        @itemsRed.push itemRed
+                        @redCounter++
+                @lastCount = event.time
+
+
 
     playerPTeam = 3
     totalHills = 3
-    areaRadius = 300
+    areaRadius = 400
 
     areaCenterX = 50 + 20 + Player.radioWidth + areaRadius
     areaCenterY = 50 + 20 + Player.radioWidth + areaRadius
