@@ -4,7 +4,7 @@
         @players = []
         @radioWidth = 150
 
-        constructor : (startPosition, @team) ->
+        constructor : (startPosition, @team, @id) ->
             @moveVector = startPosition
             @moveSpeed = 4
             @selected = false
@@ -54,9 +54,6 @@
                         @pulse.position = @item.position
                     else
                         @pulse.remove()
-
-
-
 
     class Hill
 
@@ -179,6 +176,12 @@
                         @redCounter++
                 @lastCount = event.time
 
+    socket = io()
+    socket.on 'move', (msg) ->
+        console.log  new Point(msg.targetPoint[1], msg.targetPoint[2])
+        for p in Player.players
+            if p.id is msg.sourceID
+                p.moveVector = new Point(msg.targetPoint[1], msg.targetPoint[2])
 
 
     playerPTeam = 3
@@ -206,8 +209,8 @@
         playerY = areaCenter.y - (playerPTeam - 1)*50/2 + (num - 1) * 50
         playerRedX = 50
         playerBlueX = areaCenter.x + (areaCenter.x - 50)
-        players.push(new Player(new Point(playerRedX, playerY), "red"))
-        players.push(new Player(new Point(playerBlueX, playerY), "blue"))
+        players.push(new Player(new Point(playerRedX, playerY), "red", num))
+        players.push(new Player(new Point(playerBlueX, playerY), "blue", num + 100))
 
     getArcCirclePos = (point, radius, percent) ->
         from = new Point()
@@ -234,6 +237,10 @@
         for p in players
             if p.selected
                 p.moveVector = event.point
+                socket.emit('move', {
+                    targetPoint : event.point
+                    sourceID : p.id
+                })
 
     view.onFrame = (event) ->
         for p in players

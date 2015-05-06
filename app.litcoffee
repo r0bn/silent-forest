@@ -14,5 +14,9 @@
         io.on 'connection', (socket) ->
             console.log('a userr connected')
 
+            socket.on 'move', (msg) ->
+                io.emit('move', msg)
+                console.log('message: ' + msg)
+
         http.listen 5005, () ->
             console.log('listening on *:5000')
