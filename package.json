@@ -5,18 +5,21 @@
   "scripts": {},
   "author": "",
   "dependencies": {
+    "bower": "*",
     "browser-sync": "^2.7.1",
     "coffee-script": "*",
+    "docco": "*",
+    "express": "^4.12.3",
+    "globby": "*",
     "gulp": "*",
     "gulp-coffee": "*",
-    "gulp-jade": "*",
-    "gulp-uglify": "*",
     "gulp-concat": "*",
+    "gulp-develop-server": "^0.4.2",
+    "gulp-jade": "*",
     "gulp-stylus": "*",
+    "gulp-uglify": "*",
     "gulp-util": "*",
-    "bower": "*",
-    "docco": "*",
-    "globby": "*",
-    "jade": "*"
+    "jade": "*",
+    "socket.io": "^1.3.5"
   }
 }

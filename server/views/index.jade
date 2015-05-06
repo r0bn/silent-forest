@@ -8,7 +8,7 @@ html
 
     script(src="build/vendor.js")
     script(type="text/paperscript",src="build/main.js",canvas="mainCanvas")
-
+    script(src="/socket.io/socket.io.js")
 
     title Silent Forest
 
@@ -20,5 +20,9 @@ html
             var ctx = document.getElementById("mainCanvas");
             ctx.width  = window.innerWidth;
             ctx.height = window.innerHeight;
+
+        script(type='text/javascript').
+            var socket = io();
+
 
 

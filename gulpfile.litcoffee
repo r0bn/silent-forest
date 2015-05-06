@@ -4,6 +4,7 @@
     # server
     browserSync =     require 'browser-sync'
     reload =          browserSync.reload
+    server =          require "gulp-develop-server"
 
     # js
     coffee =          require 'gulp-coffee'
@@ -87,15 +88,18 @@
       gulp.watch ['assets/coffee/**/*'],['js']
       gulp.watch ['assets/stylus/**/*'],['css']
       gulp.watch ['assets/jade/**/*'], ['html']
+      gulp.watch ['app.litcoffee', 'server/**/*'], [server.restart]
 
     gulp.task 'browser-sync', ['watch'], () ->
       browserSync {
-        server :
-            baseDir : "./static"
+        proxy : "localhost:5005"
         open: false
-        port:5000
+        port : 5000
       }
 
 # Server
 
-    gulp.task 'default', ['browser-sync']
+    gulp.task 'server', () ->
+      server.listen { path: 'app.litcoffee' }
+
+    gulp.task 'default', ['browser-sync', 'server']
