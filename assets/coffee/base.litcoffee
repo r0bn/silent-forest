@@ -75,7 +75,7 @@
 
             @conquerTime = 0.0
             #min @timetoConquer = 0.1
-            @timeToConquer = 0.1
+            @timeToConquer = 3 
 
 
         draw : (event) ->
@@ -214,7 +214,7 @@
         players.push(new Player(new Point(playerBlueX, playerY), "blue", num + 100))
 
     getArcCirclePos = (point, radius, percent) ->
-        percent = 0.001 if percent < 0.001
+        #percent = 0.001 if percent < 0.001
         from = new Point()
         through = new Point()
         to = new Point()
