@@ -1,9 +1,15 @@
 // https://github.com/maniacbug/RF24/commit/de083c964d9aeeb9fda7485c39fed27443cd617c
 
+/*
+ * hill_contact: An valid received ping from a player by the hill
+ * king_log: An valid log message from a hill by the king (central/main counter)
+ */
+
 #ifndef __SF_H__
 #define __SF_H__
 
 #define MAX_CONTACTS 20
+#define MAX_LOGS 20
 #define MAX_TEAMS 2
 
 #define UPDATE_FREQUENCY_MS 1000
@@ -33,6 +39,24 @@ class SF
          */
         int hill_occupant_teams[MAX_TEAMS];
 
+        /*
+         * Pointer for array position for the next log
+         */
+        int king_log_pointer;
+        /*
+         * Stack that hold's the logs since the last update
+         */
+        int king_logs[MAX_LOGS];
+        /*
+         * Last Update Call in millis
+         */
+        int king_last_update;
+        /*
+         * saves how many frequences the player has the most hills 
+         */
+        int king_majority_teams[MAX_TEAMS];
+
+
     protected:
 
     public:
@@ -44,7 +68,12 @@ class SF
             hill_occupant_teamId(0),
             hill_last_update(0),
             hill_contacts(),
-            hill_occupant_teams()
+            hill_occupant_teams(),
+
+            king_log_pointer(0),
+            king_last_update(0),
+            king_logs(),
+            king_majority_teams()
         {}
 
         /**
@@ -65,6 +94,24 @@ class SF
          * hold's the current teamId of the hill occupant
          */
         int hill_occupant_teamId;
+
+        /**
+         * Register an log event
+         */
+        void king_log_event(int teamId);
+        /**
+         * Evaluate the log events and update the global state
+         */
+        void king_update();
+        /*
+         * Calls the update function in a defined frequency
+         */
+        void king_update_freq(int millis);
+        /*
+         * Returns the global points from the team
+         */
+        int king_get_team_status(int teamId);
+
 
 };
 
