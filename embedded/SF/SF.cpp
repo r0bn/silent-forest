@@ -7,6 +7,15 @@ void SF::hill_contact_event(int teamId)
     SF::hill_contact_pointer++;
 }
 
+void SF::hill_update_freq(int millis)
+{
+    if((millis - SF::hill_last_update) > UPDATE_FREQUENCY_MS)
+    {
+        SF::hill_update();
+        SF::hill_last_update = millis;
+    }
+}
+
 void SF::hill_update()
 {
     int counter1 = 0;
