@@ -6,7 +6,7 @@ int main ()
 {
     SF sf;
 
-    /*
+    
     sf.hill_contact_event(0);
     sf.hill_contact_event(0);
     sf.hill_contact_event(1);
@@ -17,8 +17,8 @@ int main ()
 
     sf.hill_update_freq(1020);
 
-    std::cout << sf.hill_occupant_teamId << std::endl;
-    */
+    std::cout << sf.hill_get_team_status(0) << std::endl;
+    std::cout << sf.hill_get_team_status(1) << std::endl;
 
     sf.king_log_event(0);
     sf.king_log_event(0);

@@ -51,8 +51,12 @@ void SF::hill_update()
     if(pointerMax > -1)
     {
         SF::hill_occupant_teams[pointerMax]++;
-        SF::hill_occupant_teamId = pointerMax;
     }
+}
+
+int SF::hill_get_team_status(int teamId)
+{
+    return SF::hill_occupant_teams[teamId];
 }
 
 void SF::king_log_event(int teamId)

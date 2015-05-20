@@ -65,7 +65,6 @@ class SF
          */
         SF(void) :
             hill_contact_pointer(0),
-            hill_occupant_teamId(0),
             hill_last_update(0),
             hill_contacts(),
             hill_occupant_teams(),
@@ -89,11 +88,10 @@ class SF
          * Calls the update function in a defined frequency
          */
         void hill_update_freq(int millis);
-
         /*
-         * hold's the current teamId of the hill occupant
+         * Returns the global points from the team
          */
-        int hill_occupant_teamId;
+        int hill_get_team_status(int teamId);
 
         /**
          * Register an log event
