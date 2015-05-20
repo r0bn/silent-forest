@@ -4,10 +4,12 @@
 #define __SF_H__
 
 #define MAX_CONTACTS 20
+#define MAX_TEAMS 2
+
 #define UPDATE_FREQUENCY_MS 1000
 
-#define TEAM_01 10
-#define TEAM_02 20
+#define TEAM_01 0
+#define TEAM_02 1
 
 #define D(x) std::cout << x << std::endl;
 
@@ -26,6 +28,10 @@ class SF
          * Last Update Call in millis
          */
         int hill_last_update;
+        /*
+         * saves how many frequences the player occupant the hill
+         */
+        int hill_occupant_teams[MAX_TEAMS];
 
     protected:
 
@@ -36,8 +42,9 @@ class SF
         SF(void) :
             hill_contact_pointer(0),
             hill_occupant_teamId(0),
-            hill_last_update(),
-            hill_contacts()
+            hill_last_update(0),
+            hill_contacts(),
+            hill_occupant_teams()
         {}
 
         /**

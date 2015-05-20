@@ -18,33 +18,39 @@ void SF::hill_update_freq(int millis)
 
 void SF::hill_update()
 {
-    int counter1 = 0;
-    int counter2 = 0;
+    int counter[MAX_TEAMS] = {0};
 
     while(SF::hill_contact_pointer > 0) 
     {
-        if(hill_contacts[SF::hill_contact_pointer-1] == TEAM_01) 
-        {
-            counter1++;
-            D("counter1++")
-        }
-
-        if(hill_contacts[SF::hill_contact_pointer-1] == TEAM_02) 
-        {
-            counter2++;
-            D("counter2++")
-        }
-
+        // get teamId, increment in counter, decrement pointer
+        int team = hill_contacts[SF::hill_contact_pointer-1]; 
+        counter[team]++;
         SF::hill_contact_pointer--;
     }
 
-    if(counter1 > counter2)
+    // find max detected team player
+    int temp = -1;
+    int pointerMax = -1;
+    for(int i=0;i< MAX_TEAMS;i++)
     {
-        SF::hill_occupant_teamId = TEAM_01;
-    }
-    else if(counter2 > counter1)
-    {
+        // if same as last max, then cancel because draw
+        if(counter[i] == temp)
+        {
+            pointerMax = -1;
+            break;
+        }
 
-        SF::hill_occupant_teamId = TEAM_02;
+        if(counter[i] > temp)
+        {
+            temp = counter[i];
+            pointerMax = i;
+        }
+
+    }
+
+    if(pointerMax > -1)
+    {
+        SF::hill_occupant_teams[pointerMax]++;
+        SF::hill_occupant_teamId = pointerMax;
     }
 }
