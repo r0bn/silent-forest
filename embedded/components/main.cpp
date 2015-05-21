@@ -6,6 +6,17 @@
 #include "SF.h"
 #include "def.h"
 
+/*
+ * Message Types:
+ * 0 : Player Ping
+ * 1 : Hill Ping
+ */
+struct payload
+{
+  byte type;
+  byte message;
+};
+
 // Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10 
 RF24 radio(9,10);
 
@@ -18,6 +29,10 @@ boolean role_ping_out = 1, role_pong_back = 0;   // The two different roles.
 
 #ifdef PLAYER
 unsigned long last_send = 0;
+#endif
+
+#ifdef HILL
+unsigned long hill_last_send = 0;
 #endif
 
 SF sf;
@@ -57,10 +72,12 @@ void loop(void)
     
     if(FREQUENCY_MS < (millis() - last_send))
     {
+        payload p;
+        p.type = 0;
+        p.message = TEAM; 
     
-        byte team = TEAM;
         Serial.println("Now sending");
-        if (!radio.write( &team , sizeof(byte) ))
+        if (!radio.write( &p , sizeof(payload) ))
         {  
              Serial.println("failed.");  
         }
@@ -72,28 +89,76 @@ void loop(void)
 
 #ifdef HILL
 
+    // wait for player contact pings
     if(radio.available())
     {
-        byte team;
+        payload p;
         while (radio.available()) 
         {                                   // While there is data ready
-            radio.read( &team, sizeof(byte) );             // Get the payload
+            radio.read( &p, sizeof(payload) );             // Get the payload
         }    
-     
-        Serial.print("Received team: ");  
-        Serial.println(team);
 
-        sf.hill_contact_event(team);
+        if(p.type == 0)
+        {
+            Serial.print("Ping from team: ");  
+            Serial.println(p.message);
 
-        Serial.print("Team0:");
-        Serial.println(sf.hill_get_team_status(0));
-        Serial.print("Team1:");
-        Serial.println(sf.hill_get_team_status(1));
+            sf.hill_contact_event(p.message);
+        }
+#ifdef KING
+        if(p.type == 1)
+        {
+            Serial.print("Hill Status: ");  
+            Serial.println(p.message);
+
+            sf.king_log_event(p.message);
+        }
+#endif
+
     }
 
-    sf.hill_update_freq(millis());
+    // send hill occupant status if team is dominant
+    if(HILL_FREQUENCY_MS < (millis() - hill_last_send))
+    {
+        sf.hill_update();
+
+        if(sf.hill_current_occupant > -1)
+        {
+#ifndef KING
+            payload p;
+            p.type = 1;
+            p.message = sf.hill_current_occupant;
+
+            radio.stopListening();
+            radio.write(&p, sizeof(payload));
+            radio.startListening();
+
+            Serial.print("Send occupant: ");  
+            Serial.println(p.message);
+#else
+        Serial.print("King occupant: ");  
+        Serial.println(sf.hill_current_occupant);
+        sf.king_log_event(sf.hill_current_occupant);
+#endif
+        }
+
+#ifdef KING
+        sf.king_update();
+
+        Serial.print("King Team0: ");
+        Serial.println(sf.king_get_team_status(0));
+        Serial.print("King Team1: ");
+        Serial.println(sf.king_get_team_status(1));
 
 #endif
+
+
+        hill_last_send = millis();
+    }
+
+
+#endif
+
 
 
 /****************** Change Roles via Serial Commands ***************************/

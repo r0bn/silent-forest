@@ -68,6 +68,7 @@ class SF
             hill_last_update(0),
             hill_contacts(),
             hill_occupant_teams(),
+            hill_current_occupant(0),
 
             king_log_pointer(0),
             king_last_update(0),
@@ -92,6 +93,10 @@ class SF
          * Returns the global points from the team
          */
         int hill_get_team_status(int teamId);
+        /*
+         * Returns the current occupant
+         */
+        int hill_current_occupant;
 
         /**
          * Register an log event
