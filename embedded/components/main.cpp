@@ -3,6 +3,7 @@
 #include "RF24.h"
 //#include "printf.h"
 
+#include "SF.h"
 #include "def.h"
 
 // Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10 
@@ -18,6 +19,8 @@ boolean role_ping_out = 1, role_pong_back = 0;   // The two different roles.
 #ifdef PLAYER
 unsigned long last_send = 0;
 #endif
+
+SF sf;
 
 void setup() {
 
@@ -41,7 +44,8 @@ void setup() {
   radio.openReadingPipe(1,addresses[0]);
   
 #ifdef HILL
-  radio.startListening();                 // Start listening
+    radio.startListening();                 // Start listening
+    
 #endif
   //radio.printDetails();                   // Dump the configuration of the rf unit for debugging
 }
@@ -78,7 +82,16 @@ void loop(void)
      
         Serial.print("Received team: ");  
         Serial.println(team);
-   }
+
+        sf.hill_contact_event(team);
+
+        Serial.print("Team0:");
+        Serial.println(sf.hill_get_team_status(0));
+        Serial.print("Team1:");
+        Serial.println(sf.hill_get_team_status(1));
+    }
+
+    sf.hill_update_freq(millis());
 
 #endif
 

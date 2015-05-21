@@ -17,7 +17,7 @@
 #define TEAM_01 0
 #define TEAM_02 1
 
-#define D(x) std::cout << x << std::endl;
+#define D(x)
 
 class SF
 {

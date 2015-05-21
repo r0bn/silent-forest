@@ -1,4 +1,3 @@
-#include <iostream>
 #include "SF.h"
 
 void SF::hill_contact_event(int teamId)
