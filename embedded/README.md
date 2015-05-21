@@ -1,5 +1,15 @@
 # Arduino Embedded 
 
+## Extern Librarys
+
+* https://github.com/sudar/Arduino-Makefile
+* https://github.com/stanleyseow
+* Symbolic Linkfrom (SF) in Arduino Library folder (~/Arduino/libraries/)
+
+### Path dependencies
+
+* Path to Arduino-Makefile in makefile's
+
 ## Silent Forest Library (SF)
 
 Silent Forest Logic
