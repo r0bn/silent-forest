@@ -35,6 +35,8 @@ unsigned long hill_last_send = 0;
 
 SF sf;
 
+void updateLedState(int team0, int team1);
+
 void setup() 
 {
     Serial.begin(57600);
@@ -72,6 +74,16 @@ void setup()
   
 #ifdef HILL
     radio.startListening();                 // Start listening
+#endif
+
+#ifdef LED_STATE
+    for(int i=0;i<9;i++)
+    {
+        pinMode(i,OUTPUT);
+        digitalWrite(i,LOW);
+    }
+    pinMode(A5,OUTPUT);
+    digitalWrite(A5,LOW);
 #endif
 }
 
@@ -167,8 +179,39 @@ void loop(void)
         Serial.print("King Team1: ");
         Serial.println(sf.king_get_team_status(1));
 
+#ifdef LED_STATE
+        updateLedState(sf.king_get_team_status(0), sf.king_get_team_status(1));
+#endif
+
+
 #endif
         hill_last_send = millis();
     }
 #endif
+}
 
+
+void updateLedState(int team0, int team1)
+{
+    if(team0 > 0)
+        team0 = (int)(team0 / GLOBAL_POINTS_MAX * 5.0);
+    if(team1 > 0)
+        team1 = (int)(team1 / GLOBAL_POINTS_MAX * 5.0);
+
+    for(int i=0;i<team0;i++)
+    {
+        digitalWrite(i, HIGH);
+    }
+
+    if(team1 == 5)
+    {
+        digitalWrite(A5,HIGH);
+    }
+    else
+    {
+        for(int i=0;i<team1;i++)
+        {
+            digitalWrite(5 + i, HIGH);
+        }
+    }
+}
