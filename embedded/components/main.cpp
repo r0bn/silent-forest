@@ -9,11 +9,14 @@
  * Message Types:
  * 0 : Player Ping
  * 1 : Hill Ping
+ * 2 : Team Hill Status for Player
+ * 3 : Team Global Status for Player
  */
 struct payload
 {
   byte type;
   byte message;
+  byte message2;
 };
 
 // Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10 
@@ -27,6 +30,10 @@ boolean role_ping_out = 1, role_pong_back = 0;   // The two different roles.
 
 #ifdef PLAYER
 unsigned long last_send = 0;
+byte team0_hill_status = 0;
+byte team1_hill_status = 0;
+byte team0_global_status = 0;
+byte team1_global_status = 0;
 #endif
 
 #ifdef HILL
@@ -36,6 +43,7 @@ unsigned long hill_last_send = 0;
 SF sf;
 
 void updateLedState(int team0, int team1);
+void resetLED();
 
 void setup() 
 {
@@ -65,31 +73,25 @@ void setup()
   Serial.println("Role King");
 #endif
 
-  // Setup and configure rf radio
-  radio.begin();                          // Start up the radio
-  radio.setAutoAck(1);                    // Ensure autoACK is enabled
-  radio.setRetries(15,15);                // Max delay between retries & number of retries
-  radio.openWritingPipe(addresses[1]);
-  radio.openReadingPipe(1,addresses[0]);
+    // Setup and configure rf radio
+    radio.begin();                          // Start up the radio
+    radio.setAutoAck(1);                    // Ensure autoACK is enabled
+    radio.setRetries(15,15);                // Max delay between retries & number of retries
+    radio.openWritingPipe(addresses[1]);
+    radio.openReadingPipe(1,addresses[0]);
   
-#ifdef HILL
     radio.startListening();                 // Start listening
-#endif
 
-#ifdef LED_STATE
-    for(int i=0;i<9;i++)
-    {
-        pinMode(i,OUTPUT);
-        digitalWrite(i,LOW);
-    }
-    pinMode(A5,OUTPUT);
-    digitalWrite(A5,LOW);
+#ifdef PLAYER 
+    resetLED();
+    // Status Hill connection
+    pinMode(8,OUTPUT);
+    digitalWrite(8,LOW);
 #endif
 }
 
 void loop(void)
 {
-
 #ifdef PLAYER
     // Send a frequent ping  
     if(FREQUENCY_MS < (millis() - last_send))
@@ -99,17 +101,23 @@ void loop(void)
         p.message = TEAM; 
     
         Serial.println("Now sending");
+        radio.stopListening();
         if (!radio.write( &p , sizeof(payload) ))
         {  
-             Serial.println("failed.");  
+            digitalWrite(8,LOW);
+            Serial.println("failed.");  
         }
+        else
+        {
+            digitalWrite(8,HIGH);
+        }
+        radio.startListening();
+
 
         last_send = millis();
     }
 #endif
 
-
-#ifdef HILL
     // wait for player contact pings
     if(radio.available())
     {
@@ -119,12 +127,15 @@ void loop(void)
             radio.read( &p, sizeof(payload) );             // Get the payload
         }    
 
+#ifdef HILL
+
         if(p.type == 0)
         {
             //Serial.print("Ping from team: ");  
             //Serial.println(p.message);
             sf.hill_contact_event(p.message);
         }
+#endif
 
 #ifdef KING
         // receive and handle hill status messages
@@ -140,14 +151,33 @@ void loop(void)
             }
         }
 #endif
+
+#ifdef PLAYER
+
+        if(p.type == 2)
+        {
+            team0_hill_status = p.message;
+            team1_hill_status = p.message2;
+        }
+
+        if(p.type == 3)
+        {
+            team0_global_status = p.message;
+            team1_global_status = p.message2;
+        }
+        updateLedState(team0_hill_status, team1_hill_status);
+#endif
+
+
     }
 
+#ifdef HILL
     if(HILL_FREQUENCY_MS < (millis() - hill_last_send))
     {
         sf.hill_update();
 
 #ifndef KING
-        // send hill occupant status if team is dominant
+        // send hill occupant status 
         payload p;
         p.type = 1;
         if(sf.hill_current_occupant > -1)
@@ -155,8 +185,14 @@ void loop(void)
         else
             p.message = 3;
 
+        payload hPC;
+        hPC.type = 2;
+        hPC.message = sf.hill_team0_connected;
+        hPC.message2 = sf.hill_team1_connected;
+
         radio.stopListening();
         radio.write(&p, sizeof(payload));
+        radio.write(&hPC, sizeof(payload));
         radio.startListening();
 
         Serial.print("Send occupant: ");  
@@ -184,6 +220,7 @@ void loop(void)
 #endif
 
 
+
 #endif
         hill_last_send = millis();
     }
@@ -191,6 +228,7 @@ void loop(void)
 }
 
 
+#ifdef LED_STATE
 void updateLedState(int team0, int team1)
 {
     if(team0 > 0)
@@ -215,3 +253,42 @@ void updateLedState(int team0, int team1)
         }
     }
 }
+#endif
+
+#ifdef PLAYER
+void resetLED() 
+{
+    // RED
+    for(int i=2;i<7;i++)
+    {
+        pinMode(i,OUTPUT);
+        digitalWrite(i,LOW);
+    }
+    // Blue
+    for(int i=0;i<5;i++)
+    {
+        pinMode(A4 - i,OUTPUT);
+        digitalWrite(A4 - i,LOW);
+    }
+}
+#endif
+
+#ifdef PLAYER
+void updateLedState(int team0, int team1)
+{
+    resetLED();
+
+    // RED
+    for(int i=2;i<(2+team0);i++)
+    {
+        digitalWrite(i,HIGH);
+    }
+    // Blue
+    for(int i=0;i<(0+team1);i++)
+    {
+        digitalWrite(A4 - i,HIGH);
+    }
+
+}
+#endif
+

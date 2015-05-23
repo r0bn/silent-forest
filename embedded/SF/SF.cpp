@@ -27,6 +27,10 @@ void SF::hill_update()
         SF::hill_contact_pointer--;
     }
 
+    // Save State
+    SF::hill_team0_connected = counter[0];
+    SF::hill_team1_connected = counter[1];
+
     // find max detected team player
     int temp = -1;
     int pointerMax = -1;

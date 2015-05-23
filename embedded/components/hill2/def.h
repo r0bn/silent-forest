@@ -1,6 +1,6 @@
 #define HILL 
 
-#define HILL_FREQUENCY_MS 2000
+#define HILL_FREQUENCY_MS 1000
 
 #define KING
 #define LED_STATE 1

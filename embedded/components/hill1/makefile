@@ -1,6 +1,9 @@
 ARDUINO_DIR   = /home/robin/applications/arduino-1.6.3
 
-BOARD_TAG     = uno
+ARCHITECTURE  = avr
+BOARD_TAG     = mega
+BOARD_SUB     = atmega2560
+
 MONITOR_PORT  = /dev/ttyACM1
 MONITOR_BAUDRATE	= 57600
 

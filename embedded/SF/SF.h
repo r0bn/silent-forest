@@ -69,6 +69,8 @@ class SF
             hill_contacts(),
             hill_occupant_teams(),
             hill_current_occupant(0),
+            hill_team0_connected(0),
+            hill_team1_connected(0),
 
             king_log_pointer(0),
             king_last_update(0),
@@ -97,6 +99,14 @@ class SF
          * Returns the current occupant
          */
         int hill_current_occupant;
+        /*
+         * Hill connected Player team0
+         */
+        int hill_team0_connected;
+        /*
+         * Hill connected Player team1
+         */
+        int hill_team1_connected;
 
         /**
          * Register an log event
