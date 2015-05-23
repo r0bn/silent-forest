@@ -38,6 +38,8 @@ byte team1_global_status = 0;
 
 #ifdef HILL
 unsigned long hill_last_send = 0;
+byte team0_global_status = 0;
+byte team1_global_status = 0;
 #endif
 
 SF sf;
@@ -87,6 +89,9 @@ void setup()
     // Status Hill connection
     pinMode(8,OUTPUT);
     digitalWrite(8,LOW);
+    // Button Status
+    pinMode(A5,INPUT);
+    digitalWrite(A5,HIGH);
 #endif
 
 #ifdef XBEE
@@ -143,6 +148,16 @@ void loop(void)
                 }
             }
 #endif
+
+#ifdef HILL
+            if(type == 3)
+            {
+                Serial.println("Received Global state");  
+                team0_global_status = message; 
+                team1_global_status = message2; 
+            }
+
+#endif
         }
     }
 #endif
@@ -166,7 +181,6 @@ void loop(void)
         }
 #endif
 
-
 #ifdef PLAYER
 
         if(p.type == 2)
@@ -180,7 +194,27 @@ void loop(void)
             team0_global_status = p.message;
             team1_global_status = p.message2;
         }
-        updateLedState(team0_hill_status, team1_hill_status);
+        if(digitalRead(A5) == LOW)
+        {
+            byte t0 = 0;
+            byte t1 = 0;
+            if(team0_global_status > 0)
+                t0 = (int)(team0_global_status / GLOBAL_POINTS_MAX * 5.0);
+            if(team1_global_status > 0)
+                t1 = (int)(team1_global_status / GLOBAL_POINTS_MAX * 5.0);
+
+            if(t0 > 5)
+                t0 = 5;
+            if(t1 > 5)
+                t1 = 5;
+
+            updateLedState(t0, t1);
+        }
+        else 
+        {
+            updateLedState(team0_hill_status, team1_hill_status);
+        }
+
 #endif
 
 
@@ -190,15 +224,6 @@ void loop(void)
     if(HILL_FREQUENCY_MS < (millis() - hill_last_send))
     {
         sf.hill_update();
-
-        payload hPC;
-        hPC.type = 2;
-        hPC.message = sf.hill_team0_connected;
-        hPC.message2 = sf.hill_team1_connected;
-
-        radio.stopListening();
-        radio.write(&hPC, sizeof(payload));
-        radio.startListening();
 
 
 #ifndef KING
@@ -226,56 +251,54 @@ void loop(void)
 
         if(sf.hill_current_occupant > -1)
             sf.king_log_event(sf.hill_current_occupant);
+
+
 #endif
 
 #ifdef KING
         // update global statek
         sf.king_update();
 
+#ifdef XBEE
+        Serial1.write('a');
+        Serial1.write(3);
+        Serial1.write(sf.king_get_team_status(0));
+        Serial1.write(sf.king_get_team_status(1));
+#endif
+
         Serial.print("King Team0: ");
         Serial.println(sf.king_get_team_status(0));
         Serial.print("King Team1: ");
         Serial.println(sf.king_get_team_status(1));
-
-#ifdef LED_STATE
-        updateLedState(sf.king_get_team_status(0), sf.king_get_team_status(1));
 #endif
 
+        payload hPC;
+        hPC.type = 2;
+        hPC.message = sf.hill_team0_connected;
+        hPC.message2 = sf.hill_team1_connected;
 
+        payload g;
+        g.type = 3;
 
+#ifndef KING
+        g.message = team0_global_status;
+        g.message2 = team1_global_status;
+#else
+        g.message = sf.king_get_team_status(0);
+        g.message2 = sf.king_get_team_status(1);
 #endif
+
+        radio.stopListening();
+        radio.write(&hPC, sizeof(payload));
+        radio.write(&g, sizeof(payload));
+        radio.startListening();
+
         hill_last_send = millis();
     }
 #endif
 }
 
 
-#ifdef LED_STATE
-void updateLedState(int team0, int team1)
-{
-    if(team0 > 0)
-        team0 = (int)(team0 / GLOBAL_POINTS_MAX * 5.0);
-    if(team1 > 0)
-        team1 = (int)(team1 / GLOBAL_POINTS_MAX * 5.0);
-
-    for(int i=0;i<team0;i++)
-    {
-        digitalWrite(i, HIGH);
-    }
-
-    if(team1 == 5)
-    {
-        digitalWrite(A5,HIGH);
-    }
-    else
-    {
-        for(int i=0;i<team1;i++)
-        {
-            digitalWrite(5 + i, HIGH);
-        }
-    }
-}
-#endif
 
 #ifdef PLAYER
 void resetLED() 
