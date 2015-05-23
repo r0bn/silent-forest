@@ -88,6 +88,10 @@ void setup()
     pinMode(8,OUTPUT);
     digitalWrite(8,LOW);
 #endif
+
+#ifdef XBEE
+    Serial1.begin(115200);
+#endif
 }
 
 void loop(void)
@@ -118,6 +122,31 @@ void loop(void)
     }
 #endif
 
+#ifdef XBEE
+    if(Serial1.available() > 3)
+    {
+        if(Serial1.read() == 'a')
+        {
+            byte type = Serial1.read();
+            byte message = Serial1.read();
+            byte message2 = Serial1.read();
+
+#ifdef KING
+            if(type == 1)
+            {
+                Serial.print("Hill Status: ");  
+                Serial.println(message);
+
+                if(message != 3)
+                {
+                    sf.king_log_event(message);
+                }
+            }
+#endif
+        }
+    }
+#endif
+
     // wait for player contact pings
     if(radio.available())
     {
@@ -137,20 +166,6 @@ void loop(void)
         }
 #endif
 
-#ifdef KING
-        // receive and handle hill status messages
-        if(p.type == 1)
-        {
-            Serial.print("Hill Status: ");  
-            Serial.println(p.message);
-
-            // TODO: Cleanup workaround 3 as neutral
-            if(p.message != 3)
-            {
-                sf.king_log_event(p.message);
-            }
-        }
-#endif
 
 #ifdef PLAYER
 
@@ -176,27 +191,34 @@ void loop(void)
     {
         sf.hill_update();
 
-#ifndef KING
-        // send hill occupant status 
-        payload p;
-        p.type = 1;
-        if(sf.hill_current_occupant > -1)
-            p.message = sf.hill_current_occupant;
-        else
-            p.message = 3;
-
         payload hPC;
         hPC.type = 2;
         hPC.message = sf.hill_team0_connected;
         hPC.message2 = sf.hill_team1_connected;
 
         radio.stopListening();
-        radio.write(&p, sizeof(payload));
         radio.write(&hPC, sizeof(payload));
         radio.startListening();
 
+
+#ifndef KING
+        // send hill occupant status 
+#ifdef XBEE
+
+        byte message = 0;
+        if(sf.hill_current_occupant > -1)
+            message = sf.hill_current_occupant;
+        else
+            message = 3;
+        Serial1.write('a');
+        Serial1.write(1);
+        Serial1.write(message);
+        Serial1.write(0);
+
         Serial.print("Send occupant: ");  
-        Serial.println(p.message);
+        Serial.println(message);
+#endif
+
 #else
         // if king role, not send hill state on air
         Serial.print("King occupant: ");  
