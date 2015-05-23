@@ -288,8 +288,15 @@ void loop(void)
 #ifdef KING
         // update global statek
         sf.king_update();
-        status_led_last = !status_led_last;
-        digitalWrite(A0, status_led_last);
+        if(sf.king_get_team_status(0) >= GLOBAL_POINTS_MAX || sf.king_get_team_status(1) >= GLOBAL_POINTS_MAX)
+        {
+            digitalWrite(A0, HIGH);
+        }
+        else
+        {
+            status_led_last = !status_led_last;
+            digitalWrite(A0, status_led_last);
+        }
 
 #ifdef XBEE
         Serial1.write('a');
