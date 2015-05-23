@@ -42,6 +42,14 @@ byte team0_global_status = 0;
 byte team1_global_status = 0;
 #endif
 
+#ifdef KING
+byte status_led_last = 0;
+#endif
+
+#ifdef XBEE
+unsigned long last_receive_xbee = 0;
+#endif
+
 SF sf;
 
 void updateLedState(int team0, int team1);
@@ -57,6 +65,14 @@ void setup()
      *  This component is a hill
      */
     Serial.println("Role Hill");
+    
+    // Status1
+    pinMode(A0,OUTPUT);
+    digitalWrite(A0,LOW);
+
+    // Status2 
+    pinMode(A1,OUTPUT);
+    digitalWrite(A1,LOW);
 #endif
 
 #ifdef PLAYER 
@@ -69,10 +85,10 @@ void setup()
 #endif
 
 #ifdef KING 
-/*
- *  This component is a king additional to hill role and handles the global state 
- */
-  Serial.println("Role King");
+    /*
+     *  This component is a king additional to hill role and handles the global state 
+     */
+    Serial.println("Role King");
 #endif
 
     // Setup and configure rf radio
@@ -135,6 +151,8 @@ void loop(void)
             byte type = Serial1.read();
             byte message = Serial1.read();
             byte message2 = Serial1.read();
+    
+            last_receive_xbee = millis();
 
 #ifdef KING
             if(type == 1)
@@ -225,6 +243,18 @@ void loop(void)
     {
         sf.hill_update();
 
+#ifdef XBEE
+        if(2000 < (millis() - last_receive_xbee))
+        {
+            digitalWrite(A1,LOW);
+        }
+        else
+        {
+            digitalWrite(A1,HIGH);
+
+        }
+#endif
+
 
 #ifndef KING
         // send hill occupant status 
@@ -258,6 +288,8 @@ void loop(void)
 #ifdef KING
         // update global statek
         sf.king_update();
+        status_led_last = !status_led_last;
+        digitalWrite(A0, status_led_last);
 
 #ifdef XBEE
         Serial1.write('a');
