@@ -90,7 +90,6 @@ void SF::king_update()
         SF::king_log_pointer--;
     }
 
-    // find max detected team player
     int temp = -1;
     int pointerMax = -1;
     for(int i=0;i< MAX_TEAMS;i++)
@@ -112,7 +111,16 @@ void SF::king_update()
 
     if(pointerMax > -1)
     {
-        SF::king_majority_teams[pointerMax]++;
+        if(counter[0] > counter[1] )
+        {
+            int diff = counter[0] - counter[1];
+            SF::king_majority_teams[pointerMax] += diff;
+        }
+        if(counter[1] > counter[0] )
+        {
+            int diff = counter[1] - counter[0];
+            SF::king_majority_teams[pointerMax] += diff;
+        }
     }
 }
 
