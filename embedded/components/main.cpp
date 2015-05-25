@@ -19,6 +19,13 @@ struct payload
   byte message2;
 };
 
+enum GameStatus
+{
+    START,
+    PLAY,
+    END
+};
+
 // Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10 
 RF24 radio(9,10);
 
@@ -30,10 +37,14 @@ boolean role_ping_out = 1, role_pong_back = 0;   // The two different roles.
 
 #ifdef PLAYER
 unsigned long last_send = 0;
+unsigned long last_success_ping = 0;
+unsigned long last_pulse = 0;
 byte team0_hill_status = 0;
 byte team1_hill_status = 0;
 byte team0_global_status = 0;
 byte team1_global_status = 0;
+bool led_pulse_status = LOW;
+GameStatus game_status = PLAY;
 #endif
 
 #ifdef HILL
@@ -54,6 +65,7 @@ SF sf;
 
 void updateLedState(int team0, int team1);
 void resetLED();
+void showGlobalStatus();
 
 void setup() 
 {
@@ -79,9 +91,9 @@ void setup()
 /*
  *  This component is a player with a defined team
  */
-  Serial.println("Role Player");
-  Serial.println("Team: ");
-  Serial.println(TEAM);
+    Serial.println("Role Player");
+    Serial.println("Team: ");
+    Serial.println(TEAM);
 #endif
 
 #ifdef KING 
@@ -127,19 +139,50 @@ void loop(void)
     
         Serial.println("Now sending");
         radio.stopListening();
-        if (!radio.write( &p , sizeof(payload) ))
-        {  
+        if (radio.write( &p , sizeof(payload) ))
+        {
+            last_success_ping = millis();
+        }
+        radio.startListening();
+
+        if(2000 < millis() - last_success_ping)
+        {
             digitalWrite(8,LOW);
-            Serial.println("failed.");  
         }
         else
         {
             digitalWrite(8,HIGH);
         }
-        radio.startListening();
 
 
         last_send = millis();
+    }
+
+    if(game_status == PLAY)
+    {
+        if(digitalRead(A5) == LOW)
+        {
+            showGlobalStatus();
+        }
+        else 
+        {
+            updateLedState(team0_hill_status, team1_hill_status);
+        }
+        
+    }
+
+    if(game_status == END)
+    {
+        if(1000 < millis() - last_pulse)
+        {
+            if(led_pulse_status)
+                showGlobalStatus();
+            else
+                resetLED();
+
+            last_pulse = millis();
+            led_pulse_status = !led_pulse_status;
+        }
     }
 #endif
 
@@ -184,7 +227,7 @@ void loop(void)
     if(radio.available())
     {
         payload p;
-        while (radio.available()) 
+        while (radio.available())           //TODO: While vs if 
         {                                   // While there is data ready
             radio.read( &p, sizeof(payload) );             // Get the payload
         }    
@@ -212,29 +255,13 @@ void loop(void)
             team0_global_status = p.message;
             team1_global_status = p.message2;
         }
-        if(digitalRead(A5) == LOW)
-        {
-            byte t0 = 0;
-            byte t1 = 0;
-            if(team0_global_status > 0)
-                t0 = (int)(team0_global_status / GLOBAL_POINTS_MAX * 5.0);
-            if(team1_global_status > 0)
-                t1 = (int)(team1_global_status / GLOBAL_POINTS_MAX * 5.0);
 
-            if(t0 > 5)
-                t0 = 5;
-            if(t1 > 5)
-                t1 = 5;
-
-            updateLedState(t0, t1);
-        }
-        else 
+        if(team0_global_status > GLOBAL_POINTS_MAX || team1_global_status > GLOBAL_POINTS_MAX)
         {
-            updateLedState(team0_hill_status, team1_hill_status);
+            game_status = END;
         }
 
 #endif
-
 
     }
 
@@ -361,7 +388,7 @@ void resetLED()
 void updateLedState(int team0, int team1)
 {
     resetLED();
-
+        
     // RED
     for(int i=2;i<(2+team0);i++)
     {
@@ -376,3 +403,21 @@ void updateLedState(int team0, int team1)
 }
 #endif
 
+#ifdef PLAYER
+void showGlobalStatus()
+{
+    byte t0 = 0;
+    byte t1 = 0;
+    if(team0_global_status > 0)
+        t0 = (int)(team0_global_status / GLOBAL_POINTS_MAX * 5.0);
+    if(team1_global_status > 0)
+        t1 = (int)(team1_global_status / GLOBAL_POINTS_MAX * 5.0);
+
+    if(t0 > 5)
+        t0 = 5;
+    if(t1 > 5)
+        t1 = 5;
+
+    updateLedState(t0, t1);
+}
+#endif
