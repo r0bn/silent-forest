@@ -21,6 +21,7 @@ struct payload
 
 enum GameStatus
 {
+    INIT,
     START,
     PLAY,
     END
@@ -34,6 +35,8 @@ byte addresses[][6] = {"1Node","2Node"};
 // Set up roles to simplify testing 
 boolean role;                                    // The main role variable, holds the current role identifier
 boolean role_ping_out = 1, role_pong_back = 0;   // The two different roles.
+unsigned int start_period_time = 15000;
+unsigned long start_time = 0;
 
 #ifdef PLAYER
 unsigned long last_send = 0;
@@ -44,7 +47,7 @@ byte team1_hill_status = 0;
 byte team0_global_status = 0;
 byte team1_global_status = 0;
 bool led_pulse_status = LOW;
-GameStatus game_status = PLAY;
+GameStatus game_status = START;
 #endif
 
 #ifdef HILL
@@ -131,7 +134,7 @@ void loop(void)
 {
 #ifdef PLAYER
     // Send a frequent ping  
-    if(FREQUENCY_MS < (millis() - last_send))
+    if(FREQUENCY_MS < (millis() - last_send) && game_status == PLAY)
     {
         payload p;
         p.type = 0;
@@ -158,6 +161,30 @@ void loop(void)
         last_send = millis();
     }
 
+    if(game_status == INIT)
+    {
+        if(TEAM == 0)
+        {
+            updateLedState(5, 0);
+        }
+        else
+        {
+            updateLedState(0, 5);
+        }
+    }
+
+    if(game_status == START){
+        
+        int tmp = map(millis()  - start_time, 0, start_period_time, 0, 5);
+        if(tmp < 6)
+            updateLedState(tmp, tmp);
+        else
+        {
+            updateLedState(0, 0);
+            game_status = PLAY;
+        }
+    }
+
     if(game_status == PLAY)
     {
         if(digitalRead(A5) == LOW)
@@ -168,7 +195,6 @@ void loop(void)
         {
             updateLedState(team0_hill_status, team1_hill_status);
         }
-        
     }
 
     if(game_status == END)
@@ -256,7 +282,7 @@ void loop(void)
             team1_global_status = p.message2;
         }
 
-        if(team0_global_status > GLOBAL_POINTS_MAX || team1_global_status > GLOBAL_POINTS_MAX)
+        if(team0_global_status >= GLOBAL_POINTS_MAX || team1_global_status >= GLOBAL_POINTS_MAX)
         {
             game_status = END;
         }
@@ -375,7 +401,7 @@ void resetLED()
         pinMode(i,OUTPUT);
         digitalWrite(i,LOW);
     }
-    // Blue
+    // BLUE
     for(int i=0;i<5;i++)
     {
         pinMode(A4 - i,OUTPUT);
@@ -394,7 +420,7 @@ void updateLedState(int team0, int team1)
     {
         digitalWrite(i,HIGH);
     }
-    // Blue
+    // BLUE
     for(int i=0;i<(0+team1);i++)
     {
         digitalWrite(A4 - i,HIGH);
