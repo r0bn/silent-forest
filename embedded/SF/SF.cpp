@@ -19,6 +19,18 @@ void SF::hill_update()
 {
     int counter[MAX_TEAMS] = {0};
 
+    // if no contact stay the same as before
+    if(SF::hill_contact_pointer == 0)
+    {
+        // and last state was not neutral
+        if(SF::hill_current_occupant > -1)
+        {
+            SF::hill_occupant_teams[SF::hill_current_occupant]++;
+        }
+
+        return;
+    }
+
     while(SF::hill_contact_pointer > 0) 
     {
         // get teamId, increment in counter, decrement pointer
@@ -54,8 +66,9 @@ void SF::hill_update()
     if(pointerMax > -1)
     {
         SF::hill_occupant_teams[pointerMax]++;
-        SF::hill_current_occupant = pointerMax;
     }
+
+    SF::hill_current_occupant = pointerMax;
 }
 
 int SF::hill_get_team_status(int teamId)

@@ -35,7 +35,7 @@ byte addresses[][6] = {"1Node","2Node"};
 // Set up roles to simplify testing 
 boolean role;                                    // The main role variable, holds the current role identifier
 boolean role_ping_out = 1, role_pong_back = 0;   // The two different roles.
-unsigned int start_period_time = 15000;
+unsigned int start_period_time = 1000;
 unsigned long start_time = 0;
 
 #ifdef PLAYER
