@@ -68,7 +68,7 @@ class SF
             hill_last_update(0),
             hill_contacts(),
             hill_occupant_teams(),
-            hill_current_occupant(0),
+            hill_current_occupant(-1),
             hill_team0_connected(0),
             hill_team1_connected(0),
 
