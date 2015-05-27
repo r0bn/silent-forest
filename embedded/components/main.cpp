@@ -11,6 +11,7 @@
  * 1 : Hill Ping
  * 2 : Team Hill Status for Player
  * 3 : Team Global Status for Player
+ * 4 : Ini Global Status Message and start
  */
 struct payload
 {
@@ -47,7 +48,8 @@ byte team1_hill_status = 0;
 byte team0_global_status = 0;
 byte team1_global_status = 0;
 bool led_pulse_status = LOW;
-GameStatus game_status = START;
+GameStatus game_status = INIT;
+int global_points_max = 5;
 #endif
 
 #ifdef HILL
@@ -104,6 +106,10 @@ void setup()
      *  This component is a king additional to hill role and handles the global state 
      */
     Serial.println("Role King");
+
+    // Button Status Init Messeage
+    pinMode(A4,INPUT);
+    digitalWrite(A4,HIGH);
 #endif
 
     // Setup and configure rf radio
@@ -212,6 +218,9 @@ void loop(void)
     }
 #endif
 
+// ####################################################################################################
+// XBEE Receive Communication
+
 #ifdef XBEE
     if(Serial1.available() > 3)
     {
@@ -249,7 +258,9 @@ void loop(void)
     }
 #endif
 
-    // wait for player contact pings
+// ##################################################################################################
+// Funk Receive  
+
     if(radio.available())
     {
         payload p;
@@ -282,7 +293,18 @@ void loop(void)
             team1_global_status = p.message2;
         }
 
-        if(team0_global_status >= GLOBAL_POINTS_MAX || team1_global_status >= GLOBAL_POINTS_MAX)
+        if(game_status == INIT)
+        {
+            if(p.type == 4)
+            {
+                global_points_max = word(p.message, p.message2);
+                game_status = START;
+                Serial.println("Start game");
+                Serial.println(global_points_max);
+            }
+        }
+
+        if(team0_global_status >= global_points_max || team1_global_status >= global_points_max)
         {
             game_status = END;
         }
@@ -290,6 +312,9 @@ void loop(void)
 #endif
 
     }
+
+// ##################################################################################################
+// Funk and XBEE Send  
 
 #ifdef HILL
     if(HILL_FREQUENCY_MS < (millis() - hill_last_send))
@@ -339,51 +364,71 @@ void loop(void)
 #endif
 
 #ifdef KING
-        // update global statek
-        sf.king_update();
-        if(sf.king_get_team_status(0) >= GLOBAL_POINTS_MAX || sf.king_get_team_status(1) >= GLOBAL_POINTS_MAX)
-        {
-            digitalWrite(A0, HIGH);
+
+        // Send ini Message 
+        if(digitalRead(A4) == LOW) {
+
+            payload hPC;
+            hPC.type = 4;
+            hPC.message = highByte(GLOBAL_POINTS_MAX);
+            hPC.message2 = lowByte(GLOBAL_POINTS_MAX);
+
+            radio.stopListening();
+            radio.write(&hPC, sizeof(payload));
+            radio.startListening();
+
+            // do nothin else
         }
         else
         {
-            status_led_last = !status_led_last;
-            digitalWrite(A0, status_led_last);
-        }
+            if(sf.king_get_team_status(0) >= GLOBAL_POINTS_MAX || sf.king_get_team_status(1) >= GLOBAL_POINTS_MAX)
+            {
+                digitalWrite(A0, HIGH);
+            }
+            else
+            {
+                status_led_last = !status_led_last;
+                digitalWrite(A0, status_led_last);
+
+                // update global statek
+                sf.king_update();
+            }
+
 
 #ifdef XBEE
-        Serial1.write('a');
-        Serial1.write(3);
-        Serial1.write(sf.king_get_team_status(0));
-        Serial1.write(sf.king_get_team_status(1));
+            Serial1.write('a');
+            Serial1.write(3);
+            Serial1.write(sf.king_get_team_status(0));
+            Serial1.write(sf.king_get_team_status(1));
 #endif
 
-        Serial.print("King Team0: ");
-        Serial.println(sf.king_get_team_status(0));
-        Serial.print("King Team1: ");
-        Serial.println(sf.king_get_team_status(1));
+            Serial.print("King Team0: ");
+            Serial.println(sf.king_get_team_status(0));
+            Serial.print("King Team1: ");
+            Serial.println(sf.king_get_team_status(1));
 #endif
 
-        payload hPC;
-        hPC.type = 2;
-        hPC.message = sf.hill_team0_connected;
-        hPC.message2 = sf.hill_team1_connected;
+            payload hPC;
+            hPC.type = 2;
+            hPC.message = sf.hill_team0_connected;
+            hPC.message2 = sf.hill_team1_connected;
 
-        payload g;
-        g.type = 3;
+            payload g;
+            g.type = 3;
 
 #ifndef KING
-        g.message = team0_global_status;
-        g.message2 = team1_global_status;
+            g.message = team0_global_status;
+            g.message2 = team1_global_status;
 #else
-        g.message = sf.king_get_team_status(0);
-        g.message2 = sf.king_get_team_status(1);
+            g.message = sf.king_get_team_status(0);
+            g.message2 = sf.king_get_team_status(1);
 #endif
 
-        radio.stopListening();
-        radio.write(&hPC, sizeof(payload));
-        radio.write(&g, sizeof(payload));
-        radio.startListening();
+            radio.stopListening();
+            radio.write(&hPC, sizeof(payload));
+            radio.write(&g, sizeof(payload));
+            radio.startListening();
+        }
 
         hill_last_send = millis();
     }
@@ -435,9 +480,9 @@ void showGlobalStatus()
     byte t0 = 0;
     byte t1 = 0;
     if(team0_global_status > 0)
-        t0 = (int)(team0_global_status / GLOBAL_POINTS_MAX * 5.0);
+        t0 = map(team0_global_status, 0, global_points_max, 0, 5);
     if(team1_global_status > 0)
-        t1 = (int)(team1_global_status / GLOBAL_POINTS_MAX * 5.0);
+        t1 = map(team1_global_status, 0, global_points_max, 0, 5);
 
     if(t0 > 5)
         t0 = 5;

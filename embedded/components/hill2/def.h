@@ -4,5 +4,5 @@
 #define XBEE
 
 #define KING
-#define GLOBAL_POINTS_MAX 50.0
+#define GLOBAL_POINTS_MAX 20
 
