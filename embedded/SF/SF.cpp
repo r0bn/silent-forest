@@ -2,8 +2,11 @@
 
 void SF::hill_contact_event(int teamId)
 {
-    hill_contacts[SF::hill_contact_pointer] = teamId;
-    SF::hill_contact_pointer++;
+    if(SF::hill_contact_pointer < MAX_CONTACTS)
+    {
+        hill_contacts[SF::hill_contact_pointer] = teamId;
+        SF::hill_contact_pointer++;
+    }
 }
 
 void SF::hill_update_freq(int millis)
@@ -78,8 +81,11 @@ int SF::hill_get_team_status(int teamId)
 
 void SF::king_log_event(int teamId)
 {
-    king_logs[SF::king_log_pointer] = teamId;
-    SF::king_log_pointer++;
+    if(SF::king_log_pointer < MAX_LOGS)
+    {
+        king_logs[SF::king_log_pointer] = teamId;
+        SF::king_log_pointer++;
+    }
 }
 
 void SF::king_update_freq(int millis)

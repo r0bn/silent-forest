@@ -8,8 +8,8 @@
 #ifndef __SF_H__
 #define __SF_H__
 
-#define MAX_CONTACTS 20
-#define MAX_LOGS 20
+#define MAX_CONTACTS 40
+#define MAX_LOGS 40
 #define MAX_TEAMS 2
 
 #define UPDATE_FREQUENCY_MS 1000
