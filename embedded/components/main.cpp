@@ -33,12 +33,6 @@ RF24 radio(9,10);
 
 byte addresses[][6] = {"1Node","2Node"};
 
-// Set up roles to simplify testing 
-boolean role;                                    // The main role variable, holds the current role identifier
-boolean role_ping_out = 1, role_pong_back = 0;   // The two different roles.
-unsigned int start_period_time = 1000;
-unsigned long start_time = 0;
-
 #ifdef PLAYER
 unsigned long last_send = 0;
 unsigned long last_success_ping = 0;
@@ -138,193 +132,39 @@ void setup()
 
 void loop(void)
 {
-#ifdef PLAYER
+    read_xbee();
+    read_radio();
+
     // Send a frequent ping  
-    if(FREQUENCY_MS < (millis() - last_send) && game_status == PLAY)
+    if(FREQUENCY_MS < (millis() - last_send))
     {
-        payload p;
-        p.type = 0;
-        p.message = TEAM; 
-    
-        Serial.println("Now sending");
-        radio.stopListening();
-        if (radio.write( &p , sizeof(payload) ))
-        {
-            last_success_ping = millis();
-        }
-        radio.startListening();
-
-        if(2000 < millis() - last_success_ping)
-        {
-            digitalWrite(8,LOW);
-        }
-        else
-        {
-            digitalWrite(8,HIGH);
-        }
-
-
-        last_send = millis();
-    }
-
-    if(game_status == INIT)
-    {
-        if(TEAM == 0)
-        {
-            updateLedState(5, 0);
-        }
-        else
-        {
-            updateLedState(0, 5);
-        }
-    }
-
-    if(game_status == START){
-        
-        int tmp = map(millis()  - start_time, 0, start_period_time, 0, 5);
-        if(tmp < 6)
-            updateLedState(tmp, tmp);
-        else
-        {
-            updateLedState(0, 0);
-            game_status = PLAY;
-        }
-    }
-
-    if(game_status == PLAY)
-    {
-        if(digitalRead(A5) == LOW)
-        {
-            showGlobalStatus();
-        }
-        else 
-        {
-            updateLedState(team0_hill_status, team1_hill_status);
-        }
-    }
-
-    if(game_status == END)
-    {
-        if(1000 < millis() - last_pulse)
-        {
-            if(led_pulse_status)
-                showGlobalStatus();
-            else
-                resetLED();
-
-            last_pulse = millis();
-            led_pulse_status = !led_pulse_status;
-        }
-    }
-#endif
-
-// ####################################################################################################
-// XBEE Receive Communication
-
-#ifdef XBEE
-    if(Serial1.available() > 3)
-    {
-        if(Serial1.read() == 'a')
-        {
-            byte type = Serial1.read();
-            byte message = Serial1.read();
-            byte message2 = Serial1.read();
-    
-            last_receive_xbee = millis();
-
-#ifdef KING
-            if(type == 1)
-            {
-                Serial.print("Hill Status: ");  
-                Serial.println(message);
-
-                if(message != 3)
-                {
-                    sf.king_log_event(message);
-                }
-            }
-#endif
-
-#ifdef HILL
-            if(type == 3)
-            {
-                Serial.println("Received Global state");  
-                team0_global_status = message; 
-                team1_global_status = message2; 
-            }
-
-#endif
-        }
-    }
-#endif
-
-// ##################################################################################################
-// Funk Receive  
-
-    if(radio.available())
-    {
-        payload p;
-        while (radio.available())           //TODO: While vs if 
-        {                                   // While there is data ready
-            radio.read( &p, sizeof(payload) );             // Get the payload
-        }    
-
-#ifdef HILL
-
-        if(p.type == 0)
-        {
-            //Serial.print("Ping from team: ");  
-            //Serial.println(p.message);
-            sf.hill_contact_event(p.message);
-        }
-#endif
 
 #ifdef PLAYER
-
-        if(p.type == 2)
-        {
-            team0_hill_status = p.message;
-            team1_hill_status = p.message2;
-        }
-
-        if(p.type == 3)
-        {
-            team0_global_status = p.message;
-            team1_global_status = p.message2;
-        }
-
-        if(game_status == INIT)
-        {
-            if(p.type == 4)
-            {
-                global_points_max = word(p.message, p.message2);
-                game_status = START;
-                Serial.println("Start game");
-                Serial.println(global_points_max);
-            }
-        }
-
-        if(team0_global_status >= global_points_max || team1_global_status >= global_points_max)
-        {
-            game_status = END;
-        }
-
+        player_ping();
+        player_update();
 #endif
 
-    }
-
-// ##################################################################################################
-// Funk and XBEE Send  
-
 #ifdef HILL
-    if(HILL_FREQUENCY_MS < (millis() - hill_last_send))
-    {
+
         sf.hill_update();
 
-#ifdef XBEE
+            g.message = team0_global_status;
+            g.message2 = team1_global_status;
+
+        Payload p;
+        p.type = 1;
+        p.message = 0;
+        if(sf.hill_current_occupant > -1)
+            p.message = sf.hill_current_occupant;
+        else
+            p.message = 3;
+        send(p,XBEE)
+
+
         if(2000 < (millis() - last_receive_xbee))
         {
             digitalWrite(A1,LOW);
+            led.setStatus1(OFF)
         }
         else
         {
@@ -334,37 +174,15 @@ void loop(void)
 #endif
 
 
-#ifndef KING
-        // send hill occupant status 
-#ifdef XBEE
-
-        byte message = 0;
-        if(sf.hill_current_occupant > -1)
-            message = sf.hill_current_occupant;
-        else
-            message = 3;
-        Serial1.write('a');
-        Serial1.write(1);
-        Serial1.write(message);
-        Serial1.write(0);
-
-        Serial.print("Send occupant: ");  
-        Serial.println(message);
-#endif
-
-#else
-        // if king role, not send hill state on air
+#ifdef KING
+ // if king role, not send hill state on air
         Serial.print("King occupant: ");  
         Serial.println(sf.hill_current_occupant);
 
         if(sf.hill_current_occupant > -1)
             sf.king_log_event(sf.hill_current_occupant);
 
-
-#endif
-
-#ifdef KING
-
+        
         // Send ini Message 
         if(digitalRead(A4) == LOW) {
 
@@ -415,26 +233,25 @@ void loop(void)
 
             payload g;
             g.type = 3;
-
-#ifndef KING
-            g.message = team0_global_status;
-            g.message2 = team1_global_status;
-#else
+            
             g.message = sf.king_get_team_status(0);
             g.message2 = sf.king_get_team_status(1);
+
+
 #endif
 
-            radio.stopListening();
-            radio.write(&hPC, sizeof(payload));
-            radio.write(&g, sizeof(payload));
-            radio.startListening();
-        }
 
-        hill_last_send = millis();
+
+
+
+        last_send = millis();
     }
-#endif
-}
 
+    led.update();
+
+
+    }
+}
 
 
 #ifdef PLAYER
@@ -492,3 +309,203 @@ void showGlobalStatus()
     updateLedState(t0, t1);
 }
 #endif
+
+void player_ping()
+{
+    if(game_status == PLAY)
+    {
+        payload p;
+        p.type = 0;
+        p.message = TEAM; 
+    
+        Serial.println("Now sending");
+        radio.stopListening();
+        if (radio.write( &p , sizeof(payload) ))
+        {
+            last_success_ping = millis();
+        }
+        radio.startListening();
+
+        if(2000 < millis() - last_success_ping)
+        {
+            digitalWrite(8,LOW);
+        }
+        else
+        {
+            digitalWrite(8,HIGH);
+        }
+
+    }
+}
+
+void player_update() 
+{
+    if(game_status == INIT)
+    {
+        if(TEAM == 0)
+        {
+            updateLedState(5, 0);
+        }
+        else
+        {
+            updateLedState(0, 5);
+        }
+    }
+
+    if(game_status == START){
+        
+        int tmp = map(millis()  - start_time, 0, start_period_time, 0, 5);
+        if(tmp < 6)
+            updateLedState(tmp, tmp);
+        else
+        {
+            updateLedState(0, 0);
+            game_status = PLAY;
+        }
+    }
+
+    if(game_status == PLAY)
+    {
+        if(digitalRead(A5) == LOW)
+        {
+            showGlobalStatus();
+        }
+        else 
+        {
+            updateLedState(team0_hill_status, team1_hill_status);
+        }
+    }
+
+    if(game_status == END)
+    {
+        if(1000 < millis() - last_pulse)
+        {
+            if(led_pulse_status)
+                showGlobalStatus();
+            else
+                resetLED();
+
+            last_pulse = millis();
+            led_pulse_status = !led_pulse_status;
+        }
+    }
+}
+
+void read_xbee()
+{
+// ####################################################################################################
+// XBEE Receive Communication
+
+#ifdef XBEE
+    if(Serial1.available() > 3)
+    {
+        if(Serial1.read() == 'a')
+        {
+            byte type = Serial1.read();
+            byte message = Serial1.read();
+            byte message2 = Serial1.read();
+    
+            last_receive_xbee = millis();
+
+#ifdef KING
+            if(type == 1)
+            {
+                Serial.print("Hill Status: ");  
+                Serial.println(message);
+
+                if(message != 3)
+                {
+                    sf.king_log_event(message);
+                }
+            }
+#endif
+
+#ifdef HILL
+            if(type == 3)
+            {
+                Serial.println("Received Global state");  
+                team0_global_status = message; 
+                team1_global_status = message2; 
+            }
+
+#endif
+        }
+    }
+#endif
+
+}
+
+void read_radio()
+{
+// ##################################################################################################
+// Funk Receive  
+
+    if(radio.available())
+    {
+        payload p;
+        while (radio.available())           //TODO: While vs if 
+        {                                   // While there is data ready
+            radio.read( &p, sizeof(payload) );             // Get the payload
+        }    
+
+#ifdef HILL
+
+        if(p.type == 0)
+        {
+            //Serial.print("Ping from team: ");  
+            //Serial.println(p.message);
+            sf.hill_contact_event(p.message);
+        }
+#endif
+
+#ifdef PLAYER
+
+        if(p.type == 2)
+        {
+            team0_hill_status = p.message;
+            team1_hill_status = p.message2;
+        }
+
+        if(p.type == 3)
+        {
+            team0_global_status = p.message;
+            team1_global_status = p.message2;
+        }
+
+        if(game_status == INIT)
+        {
+            if(p.type == 4)
+            {
+                global_points_max = word(p.message, p.message2);
+                game_status = START;
+                Serial.println("Start game");
+                Serial.println(global_points_max);
+            }
+        }
+
+        if(team0_global_status >= global_points_max || team1_global_status >= global_points_max)
+        {
+            game_status = END;
+        }
+
+#endif
+
+    }
+}
+
+void send(payload p, XBEE/RADIO)
+{
+    if(XBEE)
+    {
+        Serial1.write('a');
+        Serial1.write(p.type);
+        Serial1.write(p.message);
+        Serial1.write(p.message2);
+    }
+    else if(RADIO)
+    {
+        radio.stopListening();
+        radio.write(&p, sizeof(payload));
+        radio.startListening();
+    }
+}
