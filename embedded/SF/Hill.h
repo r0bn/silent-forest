@@ -18,6 +18,6 @@ class Hill
          */
         Hill(void):
         {}
-}
+};
 
 #endif

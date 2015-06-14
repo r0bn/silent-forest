@@ -1,13 +1,13 @@
-/*
 #include <iostream>
 
-#include "SF.h"
+#include "Player.h"
 
 int main ()
 {
-    SF sf;
+    Player p; 
 
     
+    /*
     sf.hill_contact_event(0);
     sf.hill_contact_event(0);
     sf.hill_contact_event(1);
@@ -34,8 +34,8 @@ int main ()
 
     std::cout << sf.king_get_team_status(0) << std::endl;
     std::cout << sf.king_get_team_status(1) << std::endl;
+    */
 
 
     return 0;
 }
-*/

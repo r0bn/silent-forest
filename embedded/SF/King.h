@@ -18,6 +18,6 @@ class King
          */
         King(void):
         {}
-}
+};
 
 #endif

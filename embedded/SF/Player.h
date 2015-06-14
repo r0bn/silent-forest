@@ -16,8 +16,8 @@ class Player
         /*
          * Constructor
          */
-        Player(void):
+        Player(void)
         {}
-}
+};
 
 #endif
