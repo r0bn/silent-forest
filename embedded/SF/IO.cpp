@@ -5,8 +5,52 @@ setTeamRed()
 setTeamBlue()
 */
 #include "Arduino.h"
+#include "Button.h"
 #include "IO.h"
 
+
+IO::IO(module_role role)
+{
+    this->role = role;
+    buttons[0] = Button(button_1_pin, 5000, false);
+    if(role == HILL)
+    {
+        status_led_1_pin = 8;
+        status_led_2_pin = 9;
+        
+        button_2_pin = A4;
+        buttons[1] = Button(button_2_pin, 10000, true);
+    }
+
+    if(role == PLAYER)
+    {
+        status_led_1_pin = 7;
+        status_led_2_pin = 8;
+    }
+
+    /*
+     * Initialize status leds
+     */
+    pinMode(status_led_1_pin, OUTPUT);
+    pinMode(status_led_2_pin, OUTPUT);
+    digitalWrite(status_led_1_pin, LOW);
+    digitalWrite(status_led_2_pin, LOW);
+
+    /*
+     * Initialize team leds
+     */
+    for(byte i=0; i<sizeof(red_leds); i++ )
+    {
+        pinMode(red_leds[i], OUTPUT);
+        digitalWrite(red_leds[i], LOW);
+    }
+
+    for(byte i=0; i<sizeof(blue_leds); i++ )
+    {
+        pinMode(blue_leds[i], OUTPUT);
+        digitalWrite(blue_leds[i], LOW);
+    }
+}
 
 void IO::reset()
 {
@@ -67,39 +111,6 @@ void IO::switchTo(team team_to_switch)
     show_team = team_to_switch;
 }
 
-void IO::setup()
-{
-    if(role == HILL)
-    {
-        status_led_1_pin = 8;
-        status_led_2_pin = 9;
-        
-        button_2_pin = A4;
-    }
-
-    pinMode(status_led_1_pin, OUTPUT);
-    digitalWrite(status_led_1_pin, LOW);
-    pinMode(status_led_2_pin, OUTPUT);
-    digitalWrite(status_led_2_pin, LOW);
-
-    for(byte i=0; i<sizeof(red_leds); i++ )
-    {
-        pinMode(red_leds[i], OUTPUT);
-        digitalWrite(red_leds[i], LOW);
-    }
-
-    for(byte i=0; i<sizeof(blue_leds); i++ )
-    {
-        pinMode(blue_leds[i], OUTPUT);
-        digitalWrite(blue_leds[i], LOW);
-    }
-
-    pinMode(button_1_pin, INPUT);
-    digitalWrite(button_1_pin, HIGH);
-    pinMode(button_2_pin, INPUT);
-    digitalWrite(button_2_pin, HIGH);
-}
-
 void IO::update()
 {
     updateInputs();
@@ -108,7 +119,10 @@ void IO::update()
 
 void IO::updateInputs()
 {
-
+    for(byte i = 0; i<2; i++)
+    {
+        buttons[i].update();
+    }
 }
 
 void IO::updateLEDs()

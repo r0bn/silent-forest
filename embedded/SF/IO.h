@@ -61,8 +61,8 @@ class IO
          */
         byte blue_leds[5] = {A4, A3, A2, A1, A0};
         byte red_leds[5] = {2, 3, 4, 5, 6};
-        byte status_led_1_pin = 7;
-        byte status_led_2_pin = 8;
+        byte status_led_1_pin;
+        byte status_led_2_pin;
 
         /*
          * pins of the button(s)
@@ -77,6 +77,7 @@ class IO
         /*
          * saves the global/hill status
          */
+        Button buttons[2];
         byte team_blue_hill_status;
         byte team_blue_global_status;
         byte team_red_hill_status;
@@ -86,7 +87,11 @@ class IO
          * role of the module
          */
         module_role role = PLAYER;
-
+        
+        /*
+         * constructor
+         */
+        IO(module_role role);
         /*
          * switching off all LEDs
          */
