@@ -16,7 +16,7 @@ class King
         /*
          * Constructor
          */
-        King(void):
+        King(void)
         {}
 };
 

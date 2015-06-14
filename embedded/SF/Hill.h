@@ -16,7 +16,7 @@ class Hill
         /*
          * Constructor
          */
-        Hill(void):
+        Hill(void)
         {}
 };
 

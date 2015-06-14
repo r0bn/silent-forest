@@ -1,10 +1,14 @@
 #include <iostream>
 
 #include "Player.h"
+#include "Hill.h"
+#include "King.h"
 
 int main ()
 {
     Player p; 
+    Hill h;
+    King k;
 
     
     /*
