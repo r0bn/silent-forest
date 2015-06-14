@@ -3,12 +3,14 @@
 #include "Player.h"
 #include "Hill.h"
 #include "King.h"
+#include "Stack.h"
 
 int main ()
 {
     Player p; 
     Hill h;
     King k;
+    Stack stack;
 
     
     /*
