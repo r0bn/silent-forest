@@ -1,6 +1,7 @@
 #ifndef __IO_H__
 #define __IO_H__
 
+#include "Button.h"
 /*
  * Different modes a LED can performe
  */
@@ -27,6 +28,11 @@ enum team
 {
     TEAM_HILL,
     TEAM_GLOBAL
+};
+
+enum eepAdress
+{
+    EEP_MAX_HILL_POINTS = 100
 };
 
 class IO
@@ -94,6 +100,20 @@ class IO
         IO(module_role role);
         /*
          * switching off all LEDs
+         */
+
+        void eepWrite(int adress, byte data);
+        void eepWrite(int adress, int data);
+        void eepWrite(int adress, long data);
+        void eepWrite(int adress, float data);
+        
+        void eepRead(int adress, byte data);
+        void eepRead(int adress, int data);
+        void eepRead(int adress, long data);
+        void eepRead(int adress, float data);
+
+        /*
+         * Initialize status leds
          */
         void reset();
         /*

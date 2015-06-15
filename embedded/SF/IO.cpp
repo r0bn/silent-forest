@@ -5,7 +5,7 @@ setTeamRed()
 setTeamBlue()
 */
 #include "Arduino.h"
-#include "Button.h"
+#include "EEPROM.h"
 #include "IO.h"
 
 
@@ -50,6 +50,47 @@ IO::IO(module_role role)
         pinMode(blue_leds[i], OUTPUT);
         digitalWrite(blue_leds[i], LOW);
     }
+}
+
+void IO::eepRead(int adress, byte data)
+{
+    EEPROM.get(adress, data);
+}
+
+void IO::eepRead(int adress, int data)
+{
+    EEPROM.get(adress, data);
+}
+
+void IO::eepRead(int adress, long data)
+{
+    EEPROM.get(adress, data);
+}
+
+void IO::eepRead(int adress, float data)
+{
+    EEPROM.get(adress, data);
+}
+
+
+void IO::eepWrite(int adress, byte data)
+{
+    EEPROM.put(adress, data);
+}
+
+void IO::eepWrite(int adress, int data)
+{
+    EEPROM.put(adress, data);
+}
+
+void IO::eepWrite(int adress, long data)
+{
+    EEPROM.put(adress, data);
+}
+
+void IO::eepWrite(int adress, float data)
+{
+    EEPROM.put(adress, data);
 }
 
 void IO::reset()
