@@ -14,25 +14,46 @@ class Stack
 {
     private:
 
+        /*
+         * Pointer to latest element
+         */
         int pointer;
 
+        /*
+         * holds all elements
+         */
         int elements[MAX_ELEMENTS];
 
     protected:
 
     public:
         /*
-         * Constructor
+         * Constructor - Initialize variables
          */
-        Stack(void)
+        Stack(void) :
+            pointer(0),
+            elements()
         {}
 
+        /*
+         * Return's the latest element without decrementing the pointer
+         */
         int top();
 
+        /*
+         * Put a new element on the stack
+         * If MAX_ELEMENTS reached the element will be droped
+         */
         void push(int element);
 
+        /*
+         * Return's latest element and decrements the pointer
+         */
         int pop();
 
+        /*
+         * Returns the current size of the Stack
+         */
         int count();
 };
 
