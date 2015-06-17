@@ -1,6 +1,6 @@
 /*
  * Stack
- * Used for counting logs over time
+ * Simple Stack Implementation 
  * Only Integers Supported
  */
 
@@ -14,6 +14,8 @@ class Stack
 {
     private:
 
+    protected:
+
         /*
          * Pointer to latest element
          */
@@ -23,8 +25,6 @@ class Stack
          * holds all elements
          */
         int elements[MAX_ELEMENTS];
-
-    protected:
 
     public:
         /*
@@ -55,6 +55,11 @@ class Stack
          * Returns the current size of the Stack
          */
         int count();
+
+        /*
+         * Empty the complete Stack
+         */
+        void empty();
 };
 
 #endif

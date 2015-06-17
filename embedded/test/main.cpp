@@ -5,10 +5,13 @@
 #include "Hill.h"
 #include "King.h"
 #include "Stack.h"
+#include "StackCounter.h"
 
+#define PRINT(x) std::cout << x << std::endl;
 
-// Test Stack Class
+// Tests
 void test_stack();
+void test_stackCounter();
 
 int main ()
 {
@@ -17,39 +20,37 @@ int main ()
     King k;
 
     test_stack();
-
-    
-    /*
-    sf.hill_contact_event(0);
-    sf.hill_contact_event(0);
-    sf.hill_contact_event(1);
-
-    sf.hill_contact_event(1);
-    sf.hill_contact_event(1);
-    sf.hill_contact_event(1);
-
-    sf.hill_update_freq(1020);
-
-    std::cout << sf.hill_get_team_status(0) << std::endl;
-    std::cout << sf.hill_get_team_status(1) << std::endl;
-
-    sf.king_log_event(0);
-    sf.king_log_event(0);
-    sf.king_log_event(1);
-    sf.king_update_freq(1020);
-
-    sf.king_log_event(0);
-    sf.king_log_event(1);
-    sf.king_log_event(1);
-    sf.king_update_freq(3020);
-
-
-    std::cout << sf.king_get_team_status(0) << std::endl;
-    std::cout << sf.king_get_team_status(1) << std::endl;
-    */
-
+    test_stackCounter();
 
     return 0;
+}
+
+void test_stackCounter()
+{
+    StackCounter stackC;
+
+    assert(stackC.max_amount(3) == -1);
+    
+    stackC.count_elements();
+
+    assert(stackC.counter[0] == 0);
+    assert(stackC.counter[MAX_ELEMENTS_COUNTABLE - 1] == 0);
+
+    stackC.push(0);
+    stackC.push(0);
+    stackC.push(1);
+    stackC.push(1);
+    stackC.push(1);
+    stackC.push(4);
+    stackC.count_elements();
+
+    assert(stackC.counter[0] == 2);
+    assert(stackC.counter[1] == 3);
+    assert(stackC.counter[4] == 1);
+    //PRINT(stackC.max_amount(5))
+    assert(stackC.max_amount(5) == 1);
+
+    std::cout << "StackCounter successfully tested." << std::endl;
 }
 
 void test_stack()
@@ -81,9 +82,7 @@ void test_stack()
     assert(stack.top() == 30);
     assert(stack.pop() == 30);
 
-    assert(stack.count() == 1);
-    assert(stack.top() == 15);
-    assert(stack.pop() == 15);
+    stack.empty();
 
     assert(stack.count() == 0);
     assert(stack.top() == 0);

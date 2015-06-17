@@ -2,15 +2,22 @@
 
 int Stack::top()
 {
-    return Stack::elements[Stack::pointer];
+    if(Stack::pointer > 0)
+    {
+        return Stack::elements[Stack::pointer - 1];
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 void Stack::push(int element)
 {
-    if((Stack::pointer + 1) < MAX_ELEMENTS) 
+    if(Stack::pointer < MAX_ELEMENTS) 
     {
-        Stack::pointer += 1; 
         Stack::elements[Stack::pointer] = element;
+        Stack::pointer += 1; 
     }
 }
 
@@ -20,8 +27,8 @@ int Stack::pop()
 
     if(Stack::pointer > 0)
     {
-        ret = Stack::elements[Stack::pointer];
         Stack::pointer -= 1;
+        ret = Stack::elements[Stack::pointer];
     }
 
     return ret;
@@ -30,4 +37,9 @@ int Stack::pop()
 int Stack::count()
 {
     return Stack::pointer;
+}
+
+void Stack::empty()
+{
+    Stack::pointer = 0;
 }
