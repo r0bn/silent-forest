@@ -6,30 +6,55 @@
 #include "King.h"
 #include "Stack.h"
 #include "StackCounter.h"
+#include "enum.h"
 
 #define PRINT(x) std::cout << x << std::endl;
 
 // Tests
 void test_stack();
 void test_stackCounter();
+void test_hill();
 
 int main ()
 {
     Player p; 
-    Hill h;
     King k;
 
     test_stack();
     test_stackCounter();
+    test_hill();
 
     return 0;
+}
+
+void test_hill()
+{
+    Hill h;
+
+    assert(h.current_occupant == Occupant::Neutral);
+    assert(h.current_connected_team_red == 0);
+    assert(h.current_connected_team_blue == 0);
+
+    h.contact_event(Team::Red);
+    h.contact_event(Team::Red);
+    h.contact_event(Team::Blue);
+    h.contact_event(Team::Blue);
+    h.contact_event(Team::Blue);
+
+    h.update();
+
+    assert(h.current_occupant == Occupant::Blue);
+    assert(h.current_connected_team_red == 2);
+    assert(h.current_connected_team_blue == 3);
+
+    std::cout << "Hill successfully tested." << std::endl;
 }
 
 void test_stackCounter()
 {
     StackCounter stackC;
 
-    assert(stackC.max_amount(3) == -1);
+    assert(stackC.top_occurence() == -1);
     
     stackC.count_elements();
 
@@ -48,7 +73,7 @@ void test_stackCounter()
     assert(stackC.counter[1] == 3);
     assert(stackC.counter[4] == 1);
     //PRINT(stackC.max_amount(5))
-    assert(stackC.max_amount(5) == 1);
+    assert(stackC.top_occurence() == 1);
 
     std::cout << "StackCounter successfully tested." << std::endl;
 }

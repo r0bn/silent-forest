@@ -40,15 +40,15 @@ class StackCounter : public Stack
         void count_elements();
 
         /*
-         * Return's the element with the max appeareance in the Stack
+         * Return's the element with the top occurences in the Stack
          * without to empty the stack
          * Important: based on the previous call from count_elements
          *
-         * topRange: define's the range that should be compared
+         * ignore's zero values 
          *
-         * Return's "-1" if there even max amounts
+         * Return's "-1" if there even top occurences 
          */
-        int max_amount(int topRange);
+        int top_occurence();
 
 };
 

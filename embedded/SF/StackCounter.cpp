@@ -11,12 +11,18 @@ void StackCounter::count_elements()
     }
 }
 
-int StackCounter::max_amount(int topRange)
+int StackCounter::top_occurence()
 {
     int temp = -1;
     int pointerMax = -1;
-    for(int i=0;i < MAX_ELEMENTS_COUNTABLE && i < topRange;i++)
+    for(int i=0;i < MAX_ELEMENTS_COUNTABLE;i++)
     {
+        //ignore zeros
+        if(StackCounter::counter[i] == 0)
+        {
+            continue;
+        }
+
         // if same as last max, then cancel because draw
         if(StackCounter::counter[i] == temp)
         {
