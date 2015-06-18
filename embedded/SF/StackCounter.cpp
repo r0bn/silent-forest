@@ -2,7 +2,11 @@
 
 void StackCounter::count_elements()
 {
-    StackCounter::counter[MAX_ELEMENTS_COUNTABLE] = {};
+    // empty counter
+    for(int i = 0; i < MAX_ELEMENTS_COUNTABLE;i++)
+    {
+        StackCounter::counter[i] = 0;
+    }
 
     for(int i=0;i < StackCounter::pointer;i++) 
     {

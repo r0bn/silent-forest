@@ -4,10 +4,9 @@ setStatus2()
 setTeamRed()
 setTeamBlue()
 */
-#include "Arduino.h"
+#include <Arduino.h>
 #include "EEPROM.h"
 #include "IO.h"
-
 
 IO::IO(module_role role)
 {

@@ -32,7 +32,7 @@ class Hill
          */
         Hill(void) :
             local_log_teams(),
-            current_occupant(Occupant::Neutral),
+            current_occupant(Neutral),
             current_connected_team_red(0),
             current_connected_team_blue(0)
         {}
@@ -50,7 +50,7 @@ class Hill
         /*
          * current occupant
          */
-        Occupant current_occupant;
+        Team current_occupant;
 
         /*
          * RED Team connected players

@@ -23,6 +23,7 @@ int main ()
     test_stack();
     test_stackCounter();
     test_hill();
+    test_king();
 
     return 0;
 }
@@ -31,11 +32,11 @@ void test_king()
 {
     King k;
 
-    k.hill_log(Team::Red);
-    k.hill_log(Team::Red);
-    k.hill_log(Team::Red);
-    k.hill_log(Team::Blue);
-    k.hill_log(Team::Blue);
+    k.hill_log(Red);
+    k.hill_log(Red);
+    k.hill_log(Red);
+    k.hill_log(Blue);
+    k.hill_log(Blue);
 
     k.update();
 
@@ -46,19 +47,19 @@ void test_hill()
 {
     Hill h;
 
-    assert(h.current_occupant == Occupant::Neutral);
+    assert(h.current_occupant == Neutral);
     assert(h.current_connected_team_red == 0);
     assert(h.current_connected_team_blue == 0);
 
-    h.contact_event(Team::Red);
-    h.contact_event(Team::Red);
-    h.contact_event(Team::Blue);
-    h.contact_event(Team::Blue);
-    h.contact_event(Team::Blue);
+    h.contact_event(Red);
+    h.contact_event(Red);
+    h.contact_event(Blue);
+    h.contact_event(Blue);
+    h.contact_event(Blue);
 
     h.update();
 
-    assert(h.current_occupant == Occupant::Blue);
+    assert(h.current_occupant == Blue);
     assert(h.current_connected_team_red == 2);
     assert(h.current_connected_team_blue == 3);
 

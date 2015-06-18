@@ -1,9 +1,20 @@
 #include <SPI.h>
 #include "nRF24L01.h"
 #include "RF24.h"
+// Needs to be referenced here to use it in the SF library
+#include "EEPROM.h"
+
+#include "def.h"
+#include "enum.h"
 
 #include "SF.h"
-#include "def.h"
+
+// Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10 
+RF24 radio(9,10);
+byte addresses[][6] = {"1Node","2Node"};
+
+// game loop
+unsigned long last_send = 0;
 
 /*
  * Message Types:
@@ -19,22 +30,12 @@ struct payload
   byte message;
   byte message2;
 };
+// static payload
+payload static_payload;
 
-enum GameStatus
-{
-    INIT,
-    START,
-    PLAY,
-    END
-};
-
-// Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10 
-RF24 radio(9,10);
-
-byte addresses[][6] = {"1Node","2Node"};
 
 #ifdef PLAYER
-unsigned long last_send = 0;
+#include "Player.h"
 unsigned long last_success_ping = 0;
 unsigned long last_pulse = 0;
 byte team0_hill_status = 0;
@@ -44,20 +45,27 @@ byte team1_global_status = 0;
 bool led_pulse_status = LOW;
 GameStatus game_status = INIT;
 int global_points_max = 5;
+void player_ping();
+void player_update();
 #endif
 
 #ifdef HILL
+#include "Hill.h"
+Hill hill;
 unsigned long hill_last_send = 0;
 byte team0_global_status = 0;
 byte team1_global_status = 0;
 #endif
 
 #ifdef KING
+#include "King.h"
 byte status_led_last = 0;
 #endif
 
 #ifdef XBEE
 unsigned long last_receive_xbee = 0;
+void send_xbee(payload p);
+void read_xbee();
 #endif
 
 SF sf;
@@ -65,6 +73,11 @@ SF sf;
 void updateLedState(int team0, int team1);
 void resetLED();
 void showGlobalStatus();
+
+void read_radio();
+// Build's a payload on a static variable for standard and performance reasons
+payload build_payload(byte type, byte message, byte message2);
+void send_radio(payload p);
 
 void setup() 
 {
@@ -78,12 +91,12 @@ void setup()
     Serial.println("Role Hill");
     
     // Status1
-    pinMode(A0,OUTPUT);
-    digitalWrite(A0,LOW);
+    //pinMode(A0,OUTPUT);
+    //digitalWrite(A0,LOW);
 
     // Status2 
-    pinMode(A1,OUTPUT);
-    digitalWrite(A1,LOW);
+    //pinMode(A1,OUTPUT);
+    //digitalWrite(A1,LOW);
 #endif
 
 #ifdef PLAYER 
@@ -102,8 +115,8 @@ void setup()
     Serial.println("Role King");
 
     // Button Status Init Messeage
-    pinMode(A4,INPUT);
-    digitalWrite(A4,HIGH);
+    //pinMode(A4,INPUT);
+    //digitalWrite(A4,HIGH);
 #endif
 
     // Setup and configure rf radio
@@ -116,13 +129,13 @@ void setup()
     radio.startListening();                 // Start listening
 
 #ifdef PLAYER 
-    resetLED();
+    //resetLED();
     // Status Hill connection
-    pinMode(8,OUTPUT);
-    digitalWrite(8,LOW);
+    //pinMode(8,OUTPUT);
+    //digitalWrite(8,LOW);
     // Button Status
-    pinMode(A5,INPUT);
-    digitalWrite(A5,HIGH);
+    //pinMode(A5,INPUT);
+    //digitalWrite(A5,HIGH);
 #endif
 
 #ifdef XBEE
@@ -132,7 +145,9 @@ void setup()
 
 void loop(void)
 {
+#ifdef XBEE
     read_xbee();
+#endif
     read_radio();
 
     // Send a frequent ping  
@@ -146,31 +161,14 @@ void loop(void)
 
 #ifdef HILL
 
-        sf.hill_update();
+        hill.update();
 
             g.message = team0_global_status;
             g.message2 = team1_global_status;
 
-        Payload p;
-        p.type = 1;
-        p.message = 0;
-        if(sf.hill_current_occupant > -1)
-            p.message = sf.hill_current_occupant;
-        else
-            p.message = 3;
-        send(p,XBEE)
+        // send hill occupant status
+        send_xbee(build_payload(1,(byte)hill.current_occupant,0));
 
-
-        if(2000 < (millis() - last_receive_xbee))
-        {
-            digitalWrite(A1,LOW);
-            led.setStatus1(OFF)
-        }
-        else
-        {
-            digitalWrite(A1,HIGH);
-
-        }
 #endif
 
 
@@ -224,7 +222,6 @@ void loop(void)
             Serial.println(sf.king_get_team_status(0));
             Serial.print("King Team1: ");
             Serial.println(sf.king_get_team_status(1));
-#endif
 
             payload hPC;
             hPC.type = 2;
@@ -240,17 +237,10 @@ void loop(void)
 
 #endif
 
-
-
-
-
         last_send = millis();
-    }
-
-    led.update();
-
 
     }
+    //led.update();
 }
 
 
@@ -352,6 +342,7 @@ void player_update()
         }
     }
 
+    /*
     if(game_status == START){
         
         int tmp = map(millis()  - start_time, 0, start_period_time, 0, 5);
@@ -363,6 +354,7 @@ void player_update()
             game_status = PLAY;
         }
     }
+    */
 
     if(game_status == PLAY)
     {
@@ -391,12 +383,9 @@ void player_update()
     }
 }
 
+#ifdef XBEE
 void read_xbee()
 {
-// ####################################################################################################
-// XBEE Receive Communication
-
-#ifdef XBEE
     if(Serial1.available() > 3)
     {
         if(Serial1.read() == 'a')
@@ -431,14 +420,23 @@ void read_xbee()
 #endif
         }
     }
-#endif
 
+    if(2000 < (millis() - last_receive_xbee))
+    {
+        digitalWrite(A1,LOW);
+        led.setStatus1(OFF)
+    }
+    else
+    {
+        digitalWrite(A1,HIGH);
+
+    }
 }
+
+#endif
 
 void read_radio()
 {
-// ##################################################################################################
-// Funk Receive  
 
     if(radio.available())
     {
@@ -493,19 +491,27 @@ void read_radio()
     }
 }
 
-void send(payload p, XBEE/RADIO)
+#ifdef XBEE
+void send_xbee(payload p)
 {
-    if(XBEE)
-    {
-        Serial1.write('a');
-        Serial1.write(p.type);
-        Serial1.write(p.message);
-        Serial1.write(p.message2);
-    }
-    else if(RADIO)
-    {
-        radio.stopListening();
-        radio.write(&p, sizeof(payload));
-        radio.startListening();
-    }
+    Serial1.write('a');
+    Serial1.write(p.type);
+    Serial1.write(p.message);
+    Serial1.write(p.message2);
+}
+#endif
+
+void send_radio(payload p)
+{
+    radio.stopListening();
+    radio.write(&p, sizeof(payload));
+    radio.startListening();
+}
+
+payload build_payload(byte type, byte message, byte message2)
+{
+    static_payload.type = type;
+    static_payload.message = message;
+    static_payload.message2 = message2;
+    return static_payload;
 }

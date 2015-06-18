@@ -6,19 +6,24 @@
 #ifndef __ENUM_H__
 #define __ENUM_H__
 
+typedef unsigned char byte;
+
 // Describes the Teams
-enum class Team
+// TODO: Make Upper case letter
+enum Team
 {
-    Red = 1,
-    Blue = 2
+    Neutral,
+    Red,
+    Blue
 };
 
-// Describes possible occupants of a hill
-enum class Occupant 
+// Describes the game states
+enum GameStatus
 {
-    Neutral = 0,
-    Red = 1,
-    Blue = 2
+    INIT,
+    START,
+    PLAY,
+    END
 };
 
 #endif

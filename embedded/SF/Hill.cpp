@@ -14,11 +14,11 @@ void Hill::update()
         Hill::contacts.count_elements();
 
         // Save discrete team steps
-        Hill::current_connected_team_red = Hill::contacts.counter[(int)Team::Red];
-        Hill::current_connected_team_blue = Hill::contacts.counter[(int)Team::Blue];
+        Hill::current_connected_team_red = Hill::contacts.counter[(int)Red];
+        Hill::current_connected_team_blue = Hill::contacts.counter[(int)Blue];
 
         // Top connected players this round 
-        Hill::current_occupant = (Occupant) Hill::contacts.top_occurence();
+        Hill::current_occupant = (Team) Hill::contacts.top_occurence();
 
     }
 
