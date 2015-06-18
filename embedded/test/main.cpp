@@ -14,17 +14,32 @@
 void test_stack();
 void test_stackCounter();
 void test_hill();
+void test_king();
 
 int main ()
 {
     Player p; 
-    King k;
 
     test_stack();
     test_stackCounter();
     test_hill();
 
     return 0;
+}
+
+void test_king()
+{
+    King k;
+
+    k.hill_log(Team::Red);
+    k.hill_log(Team::Red);
+    k.hill_log(Team::Red);
+    k.hill_log(Team::Blue);
+    k.hill_log(Team::Blue);
+
+    k.update();
+
+    std::cout << "King successfully tested." << std::endl;
 }
 
 void test_hill()

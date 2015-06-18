@@ -13,7 +13,7 @@ class Hill
     private:
 
         /*
-         * Hold's the contacts
+         * Hold the contacts
          */
         StackCounter contacts;
 
