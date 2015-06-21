@@ -60,5 +60,5 @@ void King::read_payload(payload p)
 
 void King::send_ini()
 {
-    send_radio(build_payload(4,highByte(GLOBAL_POINTS_MAX),lowByte(GLOBAL_POINTS_MAX)));
+    //send_radio(build_payload(4,highByte(GLOBAL_POINTS_MAX),lowByte(GLOBAL_POINTS_MAX)));
 }

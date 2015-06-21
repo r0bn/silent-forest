@@ -105,9 +105,7 @@ void loop(void)
 #endif
 
         last_send = millis();
-
     }
-    //led.update();
 }
 
 #ifdef XBEE
@@ -169,6 +167,7 @@ void read_radio()
 }
 
 // Implementation send.h
+payload static_payload;
 
 #ifdef XBEE
 void send_xbee(payload p)

@@ -3,14 +3,12 @@
 
 #include "helper.h"
 
-#include "Player.h"
 #include "Hill.h"
 #include "King.h"
 #include "Stack.h"
 #include "StackCounter.h"
 #include "enum.h"
 
-#define PRINT(x) std::cout << x << std::endl;
 
 // Tests
 void test_stack();
@@ -31,24 +29,6 @@ int main ()
     return 0;
 }
 
-void test_player()
-{
-    Player p; 
-
-    assert(p.gameStatus == INIT);
-    assert(p.teamId == -1);
-
-    p.teamId = 1;
-
-    p.ping(100);
-    assert(called_send_radio() == 0);
-
-    p.gameStatus = PLAY;
-    p.ping(100);
-    assert(called_send_radio() == 1);
-
-    std::cout << "Player successfully tested." << std::endl;
-}
 
 void test_king()
 {

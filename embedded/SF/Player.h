@@ -10,10 +10,6 @@
 class Player
 {
     private:
-        /*
-         * last success ping
-         */
-        unsigned long last_success_ping;
 
     protected:
 
@@ -66,6 +62,11 @@ class Player
         int team1_hill_status;
         int team0_global_status;
         int team1_global_status;
+
+        /*
+         * last success ping
+         */
+        unsigned long last_success_ping;
 };
 
 #endif

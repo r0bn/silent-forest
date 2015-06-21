@@ -28,7 +28,7 @@ struct payload
   byte message2;
 };
 // static payload
-static payload static_payload;
+extern payload static_payload;
 
 // send with xbee
 void send_xbee(payload p);
