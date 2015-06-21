@@ -39,52 +39,23 @@ void read_xbee();
 
 void read_radio();
 
-// TODO: remove and refactore
-/*
-void updateLedState(int team0, int team1);
-void resetLED();
-void showGlobalStatus();
-*/
-
-
 void setup() 
 {
     Serial.begin(57600);
     Serial.println();
 
 #ifdef HILL 
-    /*
-     *  This component is a hill
-     */
     Serial.println("Role Hill");
-    
-    // Status1
-    //pinMode(A0,OUTPUT);
-    //digitalWrite(A0,LOW);
-
-    // Status2 
-    //pinMode(A1,OUTPUT);
-    //digitalWrite(A1,LOW);
 #endif
 
 #ifdef PLAYER 
-/*
- *  This component is a player with a defined team
- */
     Serial.println("Role Player");
     Serial.println("Team: ");
     Serial.println(TEAM);
 #endif
 
 #ifdef KING 
-    /*
-     *  This component is a king additional to hill role and handles the global state 
-     */
     Serial.println("Role King");
-
-    // Button Status Init Messeage
-    //pinMode(A4,INPUT);
-    //digitalWrite(A4,HIGH);
 #endif
 
     // Setup and configure rf radio
@@ -95,17 +66,6 @@ void setup()
     radio.openReadingPipe(1,addresses[0]);
   
     radio.startListening();                 // Start listening
-
-#ifdef PLAYER 
-    //resetLED();
-    // Status Hill connection
-    //pinMode(8,OUTPUT);
-    //digitalWrite(8,LOW);
-    // Button Status
-    //pinMode(A5,INPUT);
-    //digitalWrite(A5,HIGH);
-#endif
-
 
 #ifdef XBEE
     Serial1.begin(115200);
@@ -149,66 +109,6 @@ void loop(void)
     }
     //led.update();
 }
-
-
-/*
-#ifdef PLAYER
-void resetLED() 
-{
-    // RED
-    for(int i=2;i<7;i++)
-    {
-        pinMode(i,OUTPUT);
-        digitalWrite(i,LOW);
-    }
-    // BLUE
-    for(int i=0;i<5;i++)
-    {
-        pinMode(A4 - i,OUTPUT);
-        digitalWrite(A4 - i,LOW);
-    }
-}
-#endif
-
-#ifdef PLAYER
-void updateLedState(int team0, int team1)
-{
-    resetLED();
-        
-    // RED
-    for(int i=2;i<(2+team0);i++)
-    {
-        digitalWrite(i,HIGH);
-    }
-    // BLUE
-    for(int i=0;i<(0+team1);i++)
-    {
-        digitalWrite(A4 - i,HIGH);
-    }
-
-}
-#endif
-
-#ifdef PLAYER
-void showGlobalStatus()
-{
-    byte t0 = 0;
-    byte t1 = 0;
-    if(team0_global_status > 0)
-        t0 = map(team0_global_status, 0, global_points_max, 0, 5);
-    if(team1_global_status > 0)
-        t1 = map(team1_global_status, 0, global_points_max, 0, 5);
-
-    if(t0 > 5)
-        t0 = 5;
-    if(t1 > 5)
-        t1 = 5;
-
-    updateLedState(t0, t1);
-}
-#endif
-*/
-
 
 #ifdef XBEE
 void read_xbee()
@@ -254,8 +154,8 @@ void read_radio()
     {
         payload p;
         while (radio.available())           //TODO: While vs if 
-        {                                   // While there is data ready
-            radio.read( &p, sizeof(payload) );             // Get the payload
+        {                                   
+            radio.read( &p, sizeof(payload) );   
         }    
 
 #ifdef HILL
