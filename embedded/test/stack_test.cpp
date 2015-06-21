@@ -50,4 +50,38 @@ void test_stackCounter()
     assert(stackC.top_occurence() == 1);
 }
 
+void test_stack_base()
+{
+    Stack stack;
 
+    assert(stack.count() == 0);
+    assert(stack.pop() == 0);
+    assert(stack.top() == 0);
+
+    stack.push(5);
+
+    assert(stack.count() == 1);
+    assert(stack.top() == 5);
+
+    assert(stack.pop() == 5);
+    assert(stack.count() == 0);
+    assert(stack.top() == 0);
+
+    stack.push(15);
+    stack.push(30);
+    stack.push(40);
+
+    assert(stack.count() == 3);
+    assert(stack.top() == 40);
+    assert(stack.pop() == 40);
+
+    assert(stack.count() == 2);
+    assert(stack.top() == 30);
+    assert(stack.pop() == 30);
+
+    stack.empty();
+
+    assert(stack.count() == 0);
+    assert(stack.top() == 0);
+    assert(stack.pop() == 0);
+}
