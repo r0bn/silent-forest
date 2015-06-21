@@ -27,7 +27,6 @@ void test_player_game_end();
 
 void test_player()
 {
-
     PACKAGE("Player Class")
 
     test_player_payload_type2();
