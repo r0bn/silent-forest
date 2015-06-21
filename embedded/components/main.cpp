@@ -17,33 +17,19 @@ byte addresses[][6] = {"1Node","2Node"};
 // game loop
 unsigned long last_send = 0;
 
-
-
 #ifdef PLAYER
 #include "Player.h"
-unsigned long last_success_ping = 0;
-unsigned long last_pulse = 0;
-byte team0_hill_status = 0;
-byte team1_hill_status = 0;
-byte team0_global_status = 0;
-byte team1_global_status = 0;
-bool led_pulse_status = LOW;
-GameStatus game_status = INIT;
-int global_points_max = 5;
 Player player;
 #endif
 
 #ifdef HILL
 #include "Hill.h"
 Hill hill;
-unsigned long hill_last_send = 0;
-byte team0_global_status = 0;
-byte team1_global_status = 0;
 #endif
 
 #ifdef KING
 #include "King.h"
-byte status_led_last = 0;
+King king;
 #endif
 
 #ifdef XBEE
@@ -51,13 +37,15 @@ unsigned long last_receive_xbee = 0;
 void read_xbee();
 #endif
 
-SF sf;
+void read_radio();
 
+// TODO: remove and refactore
+/*
 void updateLedState(int team0, int team1);
 void resetLED();
 void showGlobalStatus();
+*/
 
-void read_radio();
 
 void setup() 
 {
@@ -225,6 +213,7 @@ void loop(void)
 }
 
 
+/*
 #ifdef PLAYER
 void resetLED() 
 {
@@ -280,6 +269,7 @@ void showGlobalStatus()
     updateLedState(t0, t1);
 }
 #endif
+*/
 
 
 #ifdef XBEE
@@ -356,39 +346,13 @@ void read_radio()
 #endif
 
 #ifdef PLAYER
-
-        if(p.type == 2)
-        {
-            team0_hill_status = p.message;
-            team1_hill_status = p.message2;
-        }
-
-        if(p.type == 3)
-        {
-            team0_global_status = p.message;
-            team1_global_status = p.message2;
-        }
-
-        if(game_status == INIT)
-        {
-            if(p.type == 4)
-            {
-                global_points_max = word(p.message, p.message2);
-                game_status = START;
-                Serial.println("Start game");
-                Serial.println(global_points_max);
-            }
-        }
-
-        if(team0_global_status >= global_points_max || team1_global_status >= global_points_max)
-        {
-            game_status = END;
-        }
-
+        player.read_payload(p);
 #endif
 
     }
 }
+
+// Implementation send.h
 
 #ifdef XBEE
 void send_xbee(payload p)
