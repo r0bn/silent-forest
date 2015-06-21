@@ -1,7 +1,4 @@
 #define HILL 
 #define XBEE
-
-
-#define HILL_FREQUENCY_MS 1000
-
+#define FREQUENCY_MS 1000
 

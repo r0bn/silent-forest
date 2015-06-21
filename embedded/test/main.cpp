@@ -1,6 +1,8 @@
 #include <iostream>
 #include <assert.h>
 
+#include "helper.h"
+
 #include "Player.h"
 #include "Hill.h"
 #include "King.h"
@@ -15,17 +17,37 @@ void test_stack();
 void test_stackCounter();
 void test_hill();
 void test_king();
+void test_player();
+
 
 int main ()
 {
-    Player p; 
-
     test_stack();
     test_stackCounter();
     test_hill();
     test_king();
+    test_player();
 
     return 0;
+}
+
+void test_player()
+{
+    Player p; 
+
+    assert(p.gameStatus == INIT);
+    assert(p.teamId == -1);
+
+    p.teamId = 1;
+
+    p.ping(100);
+    assert(called_send_radio() == 0);
+
+    p.gameStatus = PLAY;
+    p.ping(100);
+    assert(called_send_radio() == 1);
+
+    std::cout << "Player successfully tested." << std::endl;
 }
 
 void test_king()

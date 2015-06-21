@@ -6,6 +6,7 @@
 
 #include "def.h"
 #include "enum.h"
+#include "send.h"
 
 #include "SF.h"
 
@@ -16,22 +17,6 @@ byte addresses[][6] = {"1Node","2Node"};
 // game loop
 unsigned long last_send = 0;
 
-/*
- * Message Types:
- * 0 : Player Ping
- * 1 : Hill Ping
- * 2 : Team Hill Status for Player
- * 3 : Team Global Status for Player
- * 4 : Ini Global Status Message and start
- */
-struct payload
-{
-  byte type;
-  byte message;
-  byte message2;
-};
-// static payload
-payload static_payload;
 
 
 #ifdef PLAYER
@@ -45,8 +30,7 @@ byte team1_global_status = 0;
 bool led_pulse_status = LOW;
 GameStatus game_status = INIT;
 int global_points_max = 5;
-void player_ping();
-void player_update();
+Player player;
 #endif
 
 #ifdef HILL
@@ -64,7 +48,6 @@ byte status_led_last = 0;
 
 #ifdef XBEE
 unsigned long last_receive_xbee = 0;
-void send_xbee(payload p);
 void read_xbee();
 #endif
 
@@ -75,9 +58,6 @@ void resetLED();
 void showGlobalStatus();
 
 void read_radio();
-// Build's a payload on a static variable for standard and performance reasons
-payload build_payload(byte type, byte message, byte message2);
-void send_radio(payload p);
 
 void setup() 
 {
@@ -138,6 +118,7 @@ void setup()
     //digitalWrite(A5,HIGH);
 #endif
 
+
 #ifdef XBEE
     Serial1.begin(115200);
 #endif
@@ -155,16 +136,16 @@ void loop(void)
     {
 
 #ifdef PLAYER
-        player_ping();
-        player_update();
+        player.update();
+        player.ping(millis());
 #endif
 
 #ifdef HILL
 
         hill.update();
 
-            g.message = team0_global_status;
-            g.message2 = team1_global_status;
+        //g.message = team0_global_status;
+        //g.message2 = team1_global_status;
 
         // send hill occupant status
         send_xbee(build_payload(1,(byte)hill.current_occupant,0));
@@ -300,88 +281,6 @@ void showGlobalStatus()
 }
 #endif
 
-void player_ping()
-{
-    if(game_status == PLAY)
-    {
-        payload p;
-        p.type = 0;
-        p.message = TEAM; 
-    
-        Serial.println("Now sending");
-        radio.stopListening();
-        if (radio.write( &p , sizeof(payload) ))
-        {
-            last_success_ping = millis();
-        }
-        radio.startListening();
-
-        if(2000 < millis() - last_success_ping)
-        {
-            digitalWrite(8,LOW);
-        }
-        else
-        {
-            digitalWrite(8,HIGH);
-        }
-
-    }
-}
-
-void player_update() 
-{
-    if(game_status == INIT)
-    {
-        if(TEAM == 0)
-        {
-            updateLedState(5, 0);
-        }
-        else
-        {
-            updateLedState(0, 5);
-        }
-    }
-
-    /*
-    if(game_status == START){
-        
-        int tmp = map(millis()  - start_time, 0, start_period_time, 0, 5);
-        if(tmp < 6)
-            updateLedState(tmp, tmp);
-        else
-        {
-            updateLedState(0, 0);
-            game_status = PLAY;
-        }
-    }
-    */
-
-    if(game_status == PLAY)
-    {
-        if(digitalRead(A5) == LOW)
-        {
-            showGlobalStatus();
-        }
-        else 
-        {
-            updateLedState(team0_hill_status, team1_hill_status);
-        }
-    }
-
-    if(game_status == END)
-    {
-        if(1000 < millis() - last_pulse)
-        {
-            if(led_pulse_status)
-                showGlobalStatus();
-            else
-                resetLED();
-
-            last_pulse = millis();
-            led_pulse_status = !led_pulse_status;
-        }
-    }
-}
 
 #ifdef XBEE
 void read_xbee()
@@ -501,11 +400,12 @@ void send_xbee(payload p)
 }
 #endif
 
-void send_radio(payload p)
+int send_radio(payload p)
 {
     radio.stopListening();
-    radio.write(&p, sizeof(payload));
+    int ret = radio.write(&p, sizeof(payload));
     radio.startListening();
+    return ret;
 }
 
 payload build_payload(byte type, byte message, byte message2)
