@@ -37,7 +37,7 @@ void test_player()
 
     test_player_game_end();
 
-    PRINT("Successfully tested.")
+    PACKAGE_END("Successfully tested.")
 }
 
 void test_player_game_end()

@@ -12,7 +12,8 @@
 
 #define PRINT(x) std::cout << x << std::endl;
 
-#define PACKAGE(x) std::cout << std::endl << "*********************" << std::endl << x << std::endl;
+#define PACKAGE(x) std::cout << "*********************" << std::endl << x << std::endl;
+#define PACKAGE_END(x) std::cout << x << std::endl << std::endl;
 
 #define LOWBYTE(v)   ((unsigned char) (v))
 #define HIGHBYTE(v)  ((unsigned char) (((unsigned int) (v)) >> 8))

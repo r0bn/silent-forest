@@ -21,7 +21,7 @@ void test_stack()
     test_stack_base();
     test_stackCounter();
 
-    PRINT("Successfully tested.")
+    PACKAGE_END("Successfully tested.")
 }
 
 
