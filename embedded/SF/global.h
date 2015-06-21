@@ -10,4 +10,6 @@
 // TODO: Rename to amount
 #define MAX_TEAMS 2
 
+#define GLOBAL_POINTS_MAX 50
+
 #endif

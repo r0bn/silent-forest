@@ -4,6 +4,7 @@
 #include "StackCounter.h"
 #include "enum.h"
 #include "global.h"
+#include "send.h"
 
 
 #ifndef __KING_H__
@@ -45,6 +46,15 @@ class King
          */
         void update();
 
+        /*
+         * read Radio payloads
+         */
+        void read_payload(payload p);
+
+        /*
+         * send initial configuration
+         */
+        void send_ini();
 };
 
 #endif

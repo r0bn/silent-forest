@@ -129,81 +129,19 @@ void loop(void)
 #endif
 
 #ifdef HILL
-
         hill.update();
-
-        //g.message = team0_global_status;
-        //g.message2 = team1_global_status;
-
-        // send hill occupant status
-        send_xbee(build_payload(1,(byte)hill.current_occupant,0));
-
 #endif
 
 
 #ifdef KING
- // if king role, not send hill state on air
-        Serial.print("King occupant: ");  
-        Serial.println(sf.hill_current_occupant);
-
-        if(sf.hill_current_occupant > -1)
-            sf.king_log_event(sf.hill_current_occupant);
-
+        // if king role, not send hill state on air
+        king.hill_log(hill.current_occupant);
         
-        // Send ini Message 
         if(digitalRead(A4) == LOW) {
-
-            payload hPC;
-            hPC.type = 4;
-            hPC.message = highByte(GLOBAL_POINTS_MAX);
-            hPC.message2 = lowByte(GLOBAL_POINTS_MAX);
-
-            radio.stopListening();
-            radio.write(&hPC, sizeof(payload));
-            radio.startListening();
-
-            // do nothin else
+            king.send_ini();
         }
-        else
-        {
-            if(sf.king_get_team_status(0) >= GLOBAL_POINTS_MAX || sf.king_get_team_status(1) >= GLOBAL_POINTS_MAX)
-            {
-                digitalWrite(A0, HIGH);
-            }
-            else
-            {
-                status_led_last = !status_led_last;
-                digitalWrite(A0, status_led_last);
 
-                // update global statek
-                sf.king_update();
-            }
-
-
-#ifdef XBEE
-            Serial1.write('a');
-            Serial1.write(3);
-            Serial1.write(sf.king_get_team_status(0));
-            Serial1.write(sf.king_get_team_status(1));
-#endif
-
-            Serial.print("King Team0: ");
-            Serial.println(sf.king_get_team_status(0));
-            Serial.print("King Team1: ");
-            Serial.println(sf.king_get_team_status(1));
-
-            payload hPC;
-            hPC.type = 2;
-            hPC.message = sf.hill_team0_connected;
-            hPC.message2 = sf.hill_team1_connected;
-
-            payload g;
-            g.type = 3;
-            
-            g.message = sf.king_get_team_status(0);
-            g.message2 = sf.king_get_team_status(1);
-
-
+        king.update();
 #endif
 
         last_send = millis();
@@ -279,33 +217,19 @@ void read_xbee()
     {
         if(Serial1.read() == 'a')
         {
-            byte type = Serial1.read();
-            byte message = Serial1.read();
-            byte message2 = Serial1.read();
+            payload p;
+            p.type = Serial1.read();
+            p.message = Serial1.read();
+            p.message2 = Serial1.read();
     
             last_receive_xbee = millis();
 
 #ifdef KING
-            if(type == 1)
-            {
-                Serial.print("Hill Status: ");  
-                Serial.println(message);
-
-                if(message != 3)
-                {
-                    sf.king_log_event(message);
-                }
-            }
+            king.read_payload(p);
 #endif
 
 #ifdef HILL
-            if(type == 3)
-            {
-                Serial.println("Received Global state");  
-                team0_global_status = message; 
-                team1_global_status = message2; 
-            }
-
+            hill.read_payload(p);
 #endif
         }
     }
@@ -326,7 +250,6 @@ void read_xbee()
 
 void read_radio()
 {
-
     if(radio.available())
     {
         payload p;
@@ -336,19 +259,12 @@ void read_radio()
         }    
 
 #ifdef HILL
-
-        if(p.type == 0)
-        {
-            //Serial.print("Ping from team: ");  
-            //Serial.println(p.message);
-            sf.hill_contact_event(p.message);
-        }
+        hill.read_payload(p);
 #endif
 
 #ifdef PLAYER
         player.read_payload(p);
 #endif
-
     }
 }
 

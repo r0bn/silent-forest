@@ -4,6 +4,7 @@
 #include "StackCounter.h"
 #include "enum.h"
 #include "global.h"
+#include "send.h"
 
 #ifndef __HILL_H__
 #define __HILL_H__
@@ -34,7 +35,9 @@ class Hill
             local_log_teams(),
             current_occupant(Neutral),
             current_connected_team_red(0),
-            current_connected_team_blue(0)
+            current_connected_team_blue(0),
+            team0_global_status(0),
+            team1_global_status(0) 
         {}
 
         /*
@@ -61,6 +64,17 @@ class Hill
          * Blue Team connected players
          */
         int current_connected_team_blue;
+
+        /*
+         * read Radio payloads
+         */
+        void read_payload(payload p);
+
+        /*
+         * Point States
+         */
+        int team0_global_status;
+        int team1_global_status; 
 
 };
 
