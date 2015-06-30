@@ -14,8 +14,8 @@ IO::IO(module_role role)
     buttons[0] = Button(button_1_pin, 5000, false);
     if(role == HILL)
     {
-        status_led_1_pin = 8;
-        status_led_2_pin = 9;
+        status_led_1_pin = A0;
+        status_led_2_pin = A1;
         
         button_2_pin = A4;
         buttons[1] = Button(button_2_pin, 10000, true);
