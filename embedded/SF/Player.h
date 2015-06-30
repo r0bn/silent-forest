@@ -19,15 +19,18 @@ class Player
          */
         Player(void) :
             last_success_ping(0),
-            gameStatus(PLAY),
-            teamId(2),
+            gameStatus(INIT),
+            teamId(-1),
             global_points_max(10),
             team0_hill_status(0),
             team1_hill_status(0),
             team0_global_status(0),
             team1_global_status(0),
             ping_frequency(450),
-            Id(0)
+            Id(0),
+            connected(false),
+            prelude_period(7500),
+            prelude_start_time(0)
         {}
 
         /* 
@@ -79,6 +82,17 @@ class Player
          * ping frequency
          */
         unsigned int ping_frequency;
+
+        /*
+         * connected to hill
+         */
+        bool connected;
+
+        /*
+         * start precedure
+         */
+        unsigned int prelude_period;
+        unsigned long prelude_start_time;
 };
 
 #endif

@@ -1,8 +1,11 @@
 #include "Player.h"
 
+unsigned long get_millis();
+
 void Player::update()
 {
-    if(Player::team0_global_status >= Player::global_points_max || Player::team1_global_status >= Player::global_points_max)
+    //if(Player::team0_global_status >= Player::global_points_max || Player::team1_global_status >= Player::global_points_max)
+    if(Player::gameStatus == PLAY && (Player::team0_global_status >= 5 || Player::team1_global_status >= 5))
     {
         Player::gameStatus = END;
     }
@@ -27,7 +30,7 @@ void Player::read_payload(payload p)
         if(p.message2 == Player::Id)
             Player::last_success_ping += 1600;
     }
-    if(p.type == 2)
+    else if(p.type == 2)
     {
         Player::team0_hill_status = p.message;
         Player::team1_hill_status = p.message2;
@@ -43,8 +46,10 @@ void Player::read_payload(payload p)
         if(Player::gameStatus == INIT)
         {
             Player::global_points_max = p.message | p.message2;
-
+            
             Player::gameStatus = START;
+
+            Player::prelude_start_time = get_millis();
         }
     }
 }

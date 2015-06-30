@@ -27,6 +27,8 @@ class Hill
         /*
          * saves the id's from the players
          */
+        byte player_ids[MAX_TEAMS * 10];
+        byte id_pointer;
 
     protected:
 
@@ -44,8 +46,6 @@ class Hill
             id_pointer(0)
         {}
 
-        byte id_pointer;
-        byte player_ids[MAX_TEAMS * 10];
         /*
          * Register an contact event on the hill 
          */

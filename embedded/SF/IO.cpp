@@ -11,7 +11,7 @@ setTeamBlue()
 IO::IO(module_role role)
 {
     this->role = role;
-    buttons[0] = Button(button_1_pin, 5000, false);
+    buttons[0] = Button(button_1_pin, 5000, true);
     if(role == HILL_ROLE)
     {
         status_led_1_pin = A0;

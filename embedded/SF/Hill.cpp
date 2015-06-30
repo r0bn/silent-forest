@@ -28,6 +28,8 @@ void Hill::update()
     // send hill occupant status
     send_xbee(build_payload(1,(byte)Hill::current_occupant,0));
     send_radio(build_payload(2,(byte)Hill::current_connected_team_blue, (byte)Hill::current_connected_team_red));
+    //send_radio(build_payload(3, 3, 4));
+    send_radio(build_payload(3,(byte)Hill::team0_global_status, (byte)Hill::team1_global_status));
     id_pointer = 0;
 }
 

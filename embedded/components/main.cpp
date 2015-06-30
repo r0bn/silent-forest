@@ -20,6 +20,8 @@ unsigned long last_send = 0;
 
 #ifdef PLAYER
 #include "Player.h"
+unsigned long get_millis();
+void set_global_led();
 void update_player();
 Player player;
 IO io(PLAYER_ROLE);
@@ -34,6 +36,8 @@ IO io(HILL_ROLE);
 
 #ifdef KING
 #include "King.h"
+void update_king();
+unsigned long last_send_king = 0;
 King king;
 #endif
 
@@ -102,42 +106,106 @@ void loop(void)
 
 
 #ifdef PLAYER
-        update_player();
+    update_player();
 #endif
 
 #ifdef HILL
-        update_hill();
+    update_hill();
 #endif
 
 
 #ifdef KING
-        // if king role, not send hill state on air
-        king.hill_log(hill.current_occupant);
-        
-        if(io.buttons[0].state == DOWN) {
-            king.send_ini();
-        }
-
-        king.update();
+    update_king();
 #endif
 
 }
 unsigned long last_ping = 0;
-void send_ping(unsigned long ping_ms)
-{
-    Serial.print("ping send: ");
-    Serial.println(ping_ms);
-}
 #ifdef PLAYER
 void update_player()
 {
-        io.setHillTeam(player.team0_hill_status, player.team1_hill_status);
-        //io.setHillTeam(3,4);
-        io.setModeTeam(ON);
-        io.update();
-        player.update();
         player.ping(millis());
-        //Serial.println(player.last_success_ping);
+
+        
+    if(player.gameStatus == INIT)
+    {
+        io.setModeTeam(PULSE);
+        if(io.buttons[0].state == DOWN)
+        {
+            if(player.teamId == Blue)
+            {
+                player.teamId = Red;
+            }
+
+            else
+            {
+                player.teamId = Blue;
+            }
+        }
+        if(player.teamId == Blue || player.teamId == Red)
+        {
+            if(player.teamId == Blue)
+            {
+                io.setHillTeam(5, 0);
+            }
+            else
+            {
+                io.setHillTeam(0, 5);
+            }
+        }
+        else
+        {
+            io.setHillTeam(5, 5);
+        }
+    }
+
+    if(player.gameStatus == START)
+    {
+        if((millis() - player.prelude_start_time) < 5000)
+        {
+            io.setModeTeam(ON);
+        }
+        else
+        {
+            unsigned int tmp = map(millis() - player.prelude_start_time - 5000, 0, player.prelude_period - 5000, 0, 5);
+            if(tmp < 6)
+            {
+                io.setHillTeam(tmp, tmp);
+            }
+            else
+            {
+                io.setHillTeam(0, 0);
+                player.gameStatus = PLAY;
+                delay(random(0,750));
+            }
+        }
+    }
+
+    if(player.gameStatus == PLAY)
+    {
+        io.setHillTeam(player.team0_hill_status, player.team1_hill_status);
+        io.setGlobalTeam(player.team0_global_status, player.team1_global_status);
+        
+        io.setModeTeam(ON);
+
+        if(io.buttons[0].state == DOWN)
+        {
+            io.switchTo(TEAM_GLOBAL);
+        }
+        else if(io.buttons[0].state == RELEASED)
+        {
+            io.switchTo(TEAM_HILL);
+        }
+
+    }
+
+    if(player.gameStatus == END)
+    {
+        io.switchTo(TEAM_GLOBAL);
+        io.setModeTeam(PULSE);
+    }
+
+    player.update();
+    io.update();
 
 }
 #endif
@@ -146,23 +214,58 @@ void update_player()
 void update_hill()
 {
 
+    io.update();
+
     if(FREQUENCY_MS < (millis() - last_send))
     {
-        for(byte i=0; i<hill.id_pointer; i++)
-        {
-            Serial.print(hill.player_ids[i]);
-            Serial.print("\t");
-        }
-        Serial.println("");
-        Serial.println(hill.id_pointer);
         hill.update();
-        Serial.print("blue: ");
-        Serial.print(hill.current_connected_team_blue);
-        Serial.print("\t red: ");
-        Serial.println(hill.current_connected_team_red);
         last_send = millis();
+#ifdef KING
+        king.hill_log(hill.current_occupant);
+        Serial.print("hill occ: ");
+        Serial.println(hill.current_occupant);
+#endif
     }
 
+}
+#endif
+
+#ifdef KING
+void update_king()
+{
+
+    if(io.buttons[0].state == DOWN) {
+        king.send_ini();
+    }
+
+    if(FREQUENCY_MS < (millis() - last_send_king))
+    {
+        // if king role, not send hill state on air
+
+        king.update();
+        last_send_king = millis();
+        Serial.print("king occ: ");
+        Serial.print(king.tmp_top_occ);
+        Serial.print("king points: ");
+        Serial.print(king.global_log_teams[Blue]);
+        Serial.print("\t");
+        Serial.println(king.global_log_teams[Red]);
+    }
+}
+#endif
+
+#ifdef PLAYER
+unsigned long get_millis()
+{
+    return millis();
+}
+#endif
+
+#ifdef KING
+void set_local_global(byte blue, byte red)
+{
+    hill.team0_global_status = blue;
+    hill.team1_global_status = red;
 }
 #endif
 

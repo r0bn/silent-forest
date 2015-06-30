@@ -1,5 +1,7 @@
 #include "King.h"
 
+void set_local_global(byte blue, byte red);
+
 void King::hill_log(Team team)
 {
     King::hill_logs.push((int) team);
@@ -12,10 +14,10 @@ void King::update()
 
     // Top occupants hills from team this round 
     Team current_occupant = (Team) King::hill_logs.top_occurence();
-
+    tmp_top_occ = (Team) King::hill_logs.top_occurence();
     King::global_log_teams[(int)current_occupant]++;
 
-
+    King::hill_logs.empty();
     /*
   else
         {
@@ -33,7 +35,8 @@ void King::update()
             }
     */
 
-    send_xbee(build_payload(3,(byte)King::global_log_teams[1],(byte)King::global_log_teams[2]));
+    send_xbee(build_payload(3,King::calculate_global(King::global_log_teams[Blue]),King::calculate_global(King::global_log_teams[Red])));
+    set_local_global(King::calculate_global(King::global_log_teams[Blue]),King::calculate_global(King::global_log_teams[Red]));
 
     /*
            payload hPC;
@@ -60,5 +63,13 @@ void King::read_payload(payload p)
 
 void King::send_ini()
 {
-    //send_radio(build_payload(4,highByte(GLOBAL_POINTS_MAX),lowByte(GLOBAL_POINTS_MAX)));
+    send_radio(build_payload(4,GLOBAL_POINTS_MAX >> 8,GLOBAL_POINTS_MAX << 8 >> 8));
+}
+
+byte King::calculate_global(unsigned int points)
+{
+    byte tmp = (points - 0) * (5 - 0) / (GLOBAL_POINTS_MAX - 0) + 0;
+    if(tmp > 5)
+        tmp = 5;
+    return tmp;
 }
