@@ -23,16 +23,30 @@ void Hill::update()
     }
 
     Hill::local_log_teams[(int)Hill::current_occupant]++;
+    Hill::contacts.empty();
 
     // send hill occupant status
     send_xbee(build_payload(1,(byte)Hill::current_occupant,0));
+    send_radio(build_payload(2,(byte)Hill::current_connected_team_blue, (byte)Hill::current_connected_team_red));
+    id_pointer = 0;
 }
 
 void Hill::read_payload(payload p)
 {
     if (p.type == 0)
     {
-        Hill::contact_event((Team)p.message);
+        bool exist = false;
+        for(byte i=0; i<id_pointer; i++)
+        {
+            if(Hill::player_ids[i] == p.message2)
+                exist = true;
+        }
+        if(!exist)
+        {
+            Hill::contact_event((Team)p.message);
+            Hill::player_ids[id_pointer] = p.message2;
+            id_pointer++;
+        }
     }
     else if (p.type == 3)
     {

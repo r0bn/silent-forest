@@ -8,23 +8,28 @@
 #include "enum.h"
 #include "send.h"
 
+#include "IO.h"
 #include "SF.h"
 
 // Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10 
 RF24 radio(9,10);
-byte addresses[][6] = {"1Node","2Node"};
+const uint64_t addresses[2] = {0xF0F0F0F0E1LL,0xF0F0F0F0D2LL};
 
 // game loop
 unsigned long last_send = 0;
 
 #ifdef PLAYER
 #include "Player.h"
+void update_player();
 Player player;
+IO io(PLAYER_ROLE);
 #endif
 
 #ifdef HILL
 #include "Hill.h"
+void update_hill();
 Hill hill;
+IO io(HILL_ROLE);
 #endif
 
 #ifdef KING
@@ -52,6 +57,17 @@ void setup()
     Serial.println("Role Player");
     Serial.println("Team: ");
     Serial.println(TEAM);
+
+    //Get random seed from A5 to generate random id
+    digitalWrite(A5, LOW);
+    delay(20);
+    randomSeed(analogRead(A5));
+    player.Id = random(255);
+    player.ping_frequency = random(500,750);
+    digitalWrite(A5, HIGH);
+    Serial.print("Player Id: ");
+    Serial.println(player.Id);
+    delay(3000);
 #endif
 
 #ifdef KING 
@@ -60,12 +76,17 @@ void setup()
 
     // Setup and configure rf radio
     radio.begin();                          // Start up the radio
+#ifndef PLAYER
     radio.setAutoAck(1);                    // Ensure autoACK is enabled
+#endif
     radio.setRetries(15,15);                // Max delay between retries & number of retries
+    radio.setPALevel(RF24_PA_MAX);
+    radio.setDataRate(RF24_250KBPS);
     radio.openWritingPipe(addresses[1]);
     radio.openReadingPipe(1,addresses[0]);
   
     radio.startListening();                 // Start listening
+    radio.setPayloadSize(4);
 
 #ifdef XBEE
     Serial1.begin(115200);
@@ -75,21 +96,17 @@ void setup()
 void loop(void)
 {
 #ifdef XBEE
-    read_xbee();
+    //read_xbee();
 #endif
     read_radio();
 
-    // Send a frequent ping  
-    if(FREQUENCY_MS < (millis() - last_send))
-    {
 
 #ifdef PLAYER
-        player.update();
-        player.ping(millis());
+        update_player();
 #endif
 
 #ifdef HILL
-        hill.update();
+        update_hill();
 #endif
 
 
@@ -97,16 +114,57 @@ void loop(void)
         // if king role, not send hill state on air
         king.hill_log(hill.current_occupant);
         
-        if(digitalRead(A4) == LOW) {
+        if(io.buttons[0].state == DOWN) {
             king.send_ini();
         }
 
         king.update();
 #endif
 
+}
+unsigned long last_ping = 0;
+void send_ping(unsigned long ping_ms)
+{
+    Serial.print("ping send: ");
+    Serial.println(ping_ms);
+}
+#ifdef PLAYER
+void update_player()
+{
+        io.setHillTeam(player.team0_hill_status, player.team1_hill_status);
+        //io.setHillTeam(3,4);
+        io.setModeTeam(ON);
+        io.update();
+        player.update();
+        player.ping(millis());
+        //Serial.println(player.last_success_ping);
+
+}
+#endif
+
+#ifdef HILL
+void update_hill()
+{
+
+    if(FREQUENCY_MS < (millis() - last_send))
+    {
+        for(byte i=0; i<hill.id_pointer; i++)
+        {
+            Serial.print(hill.player_ids[i]);
+            Serial.print("\t");
+        }
+        Serial.println("");
+        Serial.println(hill.id_pointer);
+        hill.update();
+        Serial.print("blue: ");
+        Serial.print(hill.current_connected_team_blue);
+        Serial.print("\t red: ");
+        Serial.println(hill.current_connected_team_red);
         last_send = millis();
     }
+
 }
+#endif
 
 #ifdef XBEE
 void read_xbee()
@@ -134,13 +192,11 @@ void read_xbee()
 
     if(2000 < (millis() - last_receive_xbee))
     {
-        digitalWrite(A1,LOW);
-        led.setStatus1(OFF)
+        io.setStatus1(OFF);
     }
     else
     {
-        digitalWrite(A1,HIGH);
-
+        io.setStatus1(ON);
     }
 }
 
@@ -152,8 +208,8 @@ void read_radio()
     {
         payload p;
         while (radio.available())           //TODO: While vs if 
-        {                                   
-            radio.read( &p, sizeof(payload) );   
+        {
+            radio.read( &p, sizeof(payload) );
         }    
 
 #ifdef HILL

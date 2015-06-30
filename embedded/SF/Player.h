@@ -19,13 +19,15 @@ class Player
          */
         Player(void) :
             last_success_ping(0),
-            gameStatus(INIT),
-            teamId(-1),
-            global_points_max(0),
+            gameStatus(PLAY),
+            teamId(2),
+            global_points_max(10),
             team0_hill_status(0),
             team1_hill_status(0),
             team0_global_status(0),
-            team1_global_status(0)
+            team1_global_status(0),
+            ping_frequency(450),
+            Id(0)
         {}
 
         /* 
@@ -37,6 +39,11 @@ class Player
          * Team Id
          */
         int teamId;
+
+        /*
+         * Player Id
+         */
+        byte Id;
 
         /*
          * update player, led's etc...
@@ -67,6 +74,11 @@ class Player
          * last success ping
          */
         unsigned long last_success_ping;
+
+        /*
+         * ping frequency
+         */
+        unsigned int ping_frequency;
 };
 
 #endif

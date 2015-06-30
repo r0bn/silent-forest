@@ -12,7 +12,7 @@ IO::IO(module_role role)
 {
     this->role = role;
     buttons[0] = Button(button_1_pin, 5000, false);
-    if(role == HILL)
+    if(role == HILL_ROLE)
     {
         status_led_1_pin = A0;
         status_led_2_pin = A1;
@@ -21,7 +21,7 @@ IO::IO(module_role role)
         buttons[1] = Button(button_2_pin, 10000, true);
     }
 
-    if(role == PLAYER)
+    if(role == PLAYER_ROLE)
     {
         status_led_1_pin = 7;
         status_led_2_pin = 8;
@@ -170,7 +170,7 @@ void IO::updateLEDs()
     updateLED(status_led_1_pin, status_led_1_mode);
     updateLED(status_led_2_pin, status_led_2_mode);
 
-    if(role == PLAYER)
+    if(role == PLAYER_ROLE)
     {
         byte red = 0;
         byte blue = 0;

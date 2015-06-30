@@ -17,8 +17,8 @@ enum led_mode
  */
 enum module_role
 {
-    PLAYER,
-    HILL
+    PLAYER_ROLE,
+    HILL_ROLE
 };
 
 /*
@@ -92,7 +92,7 @@ class IO
         /*
          * role of the module
          */
-        module_role role = PLAYER;
+        module_role role = PLAYER_ROLE;
         
         /*
          * constructor

@@ -24,6 +24,9 @@ class Hill
          */
         int local_log_teams[MAX_TEAMS + 1];
 
+        /*
+         * saves the id's from the players
+         */
 
     protected:
 
@@ -37,9 +40,12 @@ class Hill
             current_connected_team_red(0),
             current_connected_team_blue(0),
             team0_global_status(0),
-            team1_global_status(0) 
+            team1_global_status(0),
+            id_pointer(0)
         {}
 
+        byte id_pointer;
+        byte player_ids[MAX_TEAMS * 10];
         /*
          * Register an contact event on the hill 
          */

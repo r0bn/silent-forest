@@ -13,8 +13,8 @@ typedef unsigned char byte;
 enum Team
 {
     Neutral,
-    Red,
-    Blue
+    Blue,
+    Red
 };
 
 // Describes the game states
