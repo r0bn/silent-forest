@@ -71,7 +71,6 @@ void setup()
     digitalWrite(A5, HIGH);
     Serial.print("Player Id: ");
     Serial.println(player.Id);
-    delay(3000);
 #endif
 
 #ifdef KING 
@@ -84,7 +83,7 @@ void setup()
     radio.setAutoAck(1);                    // Ensure autoACK is enabled
 #endif
     radio.setRetries(15,15);                // Max delay between retries & number of retries
-    radio.setPALevel(RF24_PA_MAX);
+    radio.setPALevel(RF24_PA_MIN);
     radio.setDataRate(RF24_250KBPS);
     radio.openWritingPipe(addresses[1]);
     radio.openReadingPipe(1,addresses[0]);
@@ -93,14 +92,14 @@ void setup()
     radio.setPayloadSize(4);
 
 #ifdef XBEE
-    Serial1.begin(115200);
+    Serial1.begin(9600);
 #endif
 }
 
 void loop(void)
 {
 #ifdef XBEE
-    //read_xbee();
+    read_xbee();
 #endif
     read_radio();
 
@@ -221,9 +220,12 @@ void update_hill()
         hill.update();
         last_send = millis();
 #ifdef KING
-        king.hill_log(hill.current_occupant);
-        Serial.print("hill occ: ");
-        Serial.println(hill.current_occupant);
+        if(hill.current_occupant != Neutral)
+        {
+            king.hill_log(hill.current_occupant);
+            Serial.print("king hill occ: ");
+            Serial.println(hill.current_occupant);
+        }
 #endif
     }
 
@@ -231,6 +233,11 @@ void update_hill()
 #endif
 
 #ifdef KING
+void sendS(int tmp)
+{
+    Serial.print("king log: ");
+    Serial.println(tmp);
+}
 void update_king()
 {
 
@@ -241,11 +248,10 @@ void update_king()
     if(FREQUENCY_MS < (millis() - last_send_king))
     {
         // if king role, not send hill state on air
-
         king.update();
         last_send_king = millis();
         Serial.print("king occ: ");
-        Serial.print(king.tmp_top_occ);
+        Serial.println(king.tmp_top_occ);
         Serial.print("king points: ");
         Serial.print(king.global_log_teams[Blue]);
         Serial.print("\t");
@@ -282,6 +288,11 @@ void read_xbee()
             p.message2 = Serial1.read();
     
             last_receive_xbee = millis();
+            if(p.type == 1)
+            {
+                Serial.print("hill occ: ");
+                Serial.println(p.message);
+            }
 
 #ifdef KING
             king.read_payload(p);
