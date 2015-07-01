@@ -30,7 +30,8 @@ class Player
             Id(0),
             connected(false),
             prelude_period(7500),
-            prelude_start_time(0)
+            prelude_start_time(0),
+            last_receive(0)
         {}
 
         /* 
@@ -93,6 +94,11 @@ class Player
          */
         unsigned int prelude_period;
         unsigned long prelude_start_time;
+
+        /*
+         * last time connected with hill
+         */
+        unsigned long last_receive;
 };
 
 #endif

@@ -16,7 +16,6 @@ void King::update()
 
     // Top occupants hills from team this round 
     Team current_occupant = (Team) King::hill_logs.top_occurence();
-    tmp_top_occ = (Team) King::hill_logs.top_occurence();
     King::global_log_teams[(int)current_occupant]++;
 
     King::hill_logs.empty();

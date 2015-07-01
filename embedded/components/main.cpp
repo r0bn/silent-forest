@@ -186,6 +186,16 @@ void update_player()
         
         io.setModeTeam(ON);
 
+        if((millis() - player.last_receive) > 2000)
+        {
+            io.setStatus1(OFF);
+            io.setHillTeam(0,0);
+        }
+        else
+        {
+            io.setStatus1(ON);
+        }
+
         if(io.buttons[0].state == DOWN)
         {
             io.switchTo(TEAM_GLOBAL);
@@ -223,8 +233,6 @@ void update_hill()
         if(hill.current_occupant != Neutral)
         {
             king.hill_log(hill.current_occupant);
-            Serial.print("king hill occ: ");
-            Serial.println(hill.current_occupant);
         }
 #endif
     }
@@ -233,11 +241,6 @@ void update_hill()
 #endif
 
 #ifdef KING
-void sendS(int tmp)
-{
-    Serial.print("king log: ");
-    Serial.println(tmp);
-}
 void update_king()
 {
 

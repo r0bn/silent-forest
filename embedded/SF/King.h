@@ -23,19 +23,17 @@ class King
          * saves the global overal game state
          * +1 is for logs of neutral phases
          */
+        int global_log_teams[MAX_TEAMS + 1];
 
 
     protected:
 
     public:
-        int global_log_teams[MAX_TEAMS + 1];
-        Team tmp_top_occ;
         /*
          * Constructor
          */
         King(void) :
-            global_log_teams(),
-            tmp_top_occ(Neutral)
+            global_log_teams()
         {}
 
         /*

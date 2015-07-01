@@ -34,12 +34,13 @@ void Player::read_payload(payload p)
     {
         Player::team0_hill_status = p.message;
         Player::team1_hill_status = p.message2;
-
+        Player::last_receive = get_millis();
     }
     else if(p.type == 3)
     {
         Player::team0_global_status = p.message;
         Player::team1_global_status = p.message2;
+        Player::last_receive = get_millis();
     }
     else if(p.type == 4)
     {
