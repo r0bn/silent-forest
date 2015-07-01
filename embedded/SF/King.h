@@ -14,16 +14,6 @@ class King
 {
     private:
 
-        /*
-         * Hold the hill logs 
-         */
-        StackCounter hill_logs;
-
-        /*
-         * saves the global overal game state
-         * +1 is for logs of neutral phases
-         */
-        int global_log_teams[MAX_TEAMS + 1];
 
 
     protected:
@@ -35,6 +25,17 @@ class King
         King(void) :
             global_log_teams()
         {}
+
+        /*
+         * Hold the hill logs 
+         */
+        StackCounter hill_logs;
+
+        /*
+         * saves the global overal game state
+         * +1 is for logs of neutral phases
+         */
+        int global_log_teams[MAX_TEAMS + 1];
 
         /*
          * Register an hill log with the current occupant 
@@ -57,6 +58,9 @@ class King
         void send_ini();
 
         byte calculate_global(unsigned int points);
+
+        byte id_pointer;
+        byte player_ids[MAX_TEAMS * 10];
 };
 
 #endif

@@ -19,6 +19,7 @@ class Player
          */
         Player(void) :
             last_success_ping(0),
+            last_5(0),
             gameStatus(INIT),
             teamId(-1),
             global_points_max(10),
@@ -29,9 +30,10 @@ class Player
             ping_frequency(450),
             Id(0),
             connected(false),
-            prelude_period(7500),
+            prelude_period(25000),
             prelude_start_time(0),
-            last_receive(0)
+            last_receive(0),
+            id_ok(0)
         {}
 
         /* 
@@ -99,6 +101,11 @@ class Player
          * last time connected with hill
          */
         unsigned long last_receive;
+
+        // refactoren by rob
+        byte id_ok;
+        unsigned long last_5;
+
 };
 
 #endif

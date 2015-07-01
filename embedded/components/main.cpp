@@ -1,4 +1,4 @@
-#include <SPI.h>
+#include <SPI.h> 
 #include "nRF24L01.h"
 #include "RF24.h"
 // Needs to be referenced here to use it in the SF library
@@ -83,7 +83,7 @@ void setup()
     radio.setAutoAck(1);                    // Ensure autoACK is enabled
 #endif
     radio.setRetries(15,15);                // Max delay between retries & number of retries
-    radio.setPALevel(RF24_PA_MIN);
+    radio.setPALevel(RF24_PA_MAX);
     radio.setDataRate(RF24_250KBPS);
     radio.openWritingPipe(addresses[1]);
     radio.openReadingPipe(1,addresses[0]);
@@ -236,7 +236,6 @@ void update_hill()
         }
 #endif
     }
-
 }
 #endif
 
@@ -253,12 +252,12 @@ void update_king()
         // if king role, not send hill state on air
         king.update();
         last_send_king = millis();
-        Serial.print("king occ: ");
-        Serial.println(king.tmp_top_occ);
-        Serial.print("king points: ");
-        Serial.print(king.global_log_teams[Blue]);
-        Serial.print("\t");
-        Serial.println(king.global_log_teams[Red]);
+        //Serial.print("king occ: ");
+        //Serial.println(king.tmp_top_occ);
+        //Serial.print("king points: ");
+        //Serial.print(king.global_log_teams[Blue]);
+        //Serial.print("\t");
+        //Serial.println(king.global_log_teams[Red]);
     }
 }
 #endif
@@ -333,8 +332,62 @@ void read_radio()
         hill.read_payload(p);
 #endif
 
+#ifdef KING
+
+        king.read_payload(p);
+
+        if(p.type == 5)
+        {
+            bool exist = false;
+            for(byte i=0; i<king.id_pointer; i++)
+            {
+                if(king.player_ids[i] == p.message)
+                    exist = true;
+            }
+            if(exist)
+            {
+                send_radio(build_payload(5,p.message,0));
+
+                Serial.print("0#");
+                Serial.println(p.message);
+            }
+            else
+            {
+                king.player_ids[king.id_pointer] = p.message;
+                king.id_pointer++;
+
+                send_radio(build_payload(5,p.message,1));
+
+                Serial.print("1#");
+                Serial.println(p.message);
+            }
+
+            for(byte i=0; i<king.id_pointer; i++)
+            {
+                Serial.print(king.player_ids[i]);
+                Serial.print(", ");
+            }
+
+        }
+#endif
+
 #ifdef PLAYER
         player.read_payload(p);
+
+        if(p.type == 5)
+        {
+            if(player.gameStatus == INIT && player.id_ok == 0)
+            {
+                if(p.message == player.Id && p.message2 == 1)
+                {
+                    player.id_ok = 1;
+                }
+                if(p.message == player.Id && p.message2 == 0)
+                {
+                    player.Id = random(255);
+                }
+            }
+        }
 #endif
     }
 }

@@ -1,12 +1,10 @@
 #include "King.h"
 
 void set_local_global(byte blue, byte red);
-void sendS(int tmp);
 
 void King::hill_log(Team team)
 {
     King::hill_logs.push((int) team);
-    sendS((int) team);
 }
 
 void King::update()
@@ -51,12 +49,11 @@ void King::update()
             g.message = sf.king_get_team_status(0);
             g.message2 = sf.king_get_team_status(1);
     */
-
 }
 
 void King::read_payload(payload p)
 {
-    if (p.type == 1)
+    if(p.type == 1)
     {
         King::hill_log((Team)p.message);
     }

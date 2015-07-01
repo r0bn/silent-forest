@@ -13,12 +13,29 @@ void Player::update()
 
 void Player::ping(unsigned long millis)
 {
-    if (Player::gameStatus == PLAY && (millis - Player::last_success_ping) > Player::ping_frequency)
+    if(Player::gameStatus == INIT && Player::id_ok == 0)
     {
-        if (send_radio(build_payload(0,(byte)Player::teamId,Player::Id)))
+        if ((millis - Player::last_5) > 2000)
         {
-            //Player::last_success_ping = millis;
+                if (send_radio(build_payload(5,(byte)Player::Id,0)))
+                {
+
+                }
+            Player::last_5 = millis;
         }
+    }
+
+    if ((millis - Player::last_success_ping) > Player::ping_frequency)
+    {
+        if(Player::gameStatus == PLAY)
+        {
+            if (send_radio(build_payload(0,(byte)Player::teamId,Player::Id)))
+            {
+                //Player::last_success_ping = millis;
+            }
+
+        }
+
         Player::last_success_ping = millis;
     }
 }
@@ -53,4 +70,5 @@ void Player::read_payload(payload p)
             Player::prelude_start_time = get_millis();
         }
     }
+
 }

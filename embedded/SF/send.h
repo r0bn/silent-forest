@@ -20,6 +20,7 @@ typedef unsigned char byte;
  * 2 : Team Hill Status for Player
  * 3 : Team Global Status for Player
  * 4 : Ini Global Status Message and start
+ * 5 : ID Handshake
  */
 struct payload
 {
