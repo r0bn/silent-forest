@@ -4,3 +4,4 @@ static/build/
 main
 build-uno
 build-mega-atmega2560
+embedded/test/test
